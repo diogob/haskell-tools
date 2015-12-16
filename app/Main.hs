@@ -1,6 +1,7 @@
 module Main where
 
-import GithubHaskell
+import HaskellTools
+import Data.List (intercalate)
 
 main :: IO ()
 main = do
