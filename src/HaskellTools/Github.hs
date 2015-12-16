@@ -1,4 +1,4 @@
-module GithubHaskell
+module HaskellTools.Github
     ( haskellRepos
     ) where
 

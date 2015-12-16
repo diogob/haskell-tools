@@ -1,8 +1,8 @@
-name:                github-haskell
+name:                haskell-tools
 version:             0.1.0.0
 synopsis:            Initial project template from stack
 description:         Please see README.md
-homepage:            http://github.com/githubuser/github-haskell#readme
+homepage:            http://github.com/githubuser/haskell-tools#readme
 license:             BSD3
 license-file:        LICENSE
 author:              Author name here
@@ -16,28 +16,29 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   ghc-options:         -Wall
-  exposed-modules:     GithubHaskell
+  exposed-modules:     HaskellTools
+  other-modules:       HaskellTools.Github
   build-depends:       base >= 4.7 && < 5
                      , github
   default-language:    Haskell2010
 
-executable github-haskell-exe
+executable haskell-tools-exe
   hs-source-dirs:      app
   main-is:             Main.hs
   ghc-options:         -Wall -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base
-                     , github-haskell
+                     , haskell-tools
   default-language:    Haskell2010
 
-test-suite github-haskell-test
+test-suite haskell-tools-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Spec.hs
   build-depends:       base
-                     , github-haskell
+                     , haskell-tools
   ghc-options:         -Wall -threaded -rtsopts -with-rtsopts=-N
   default-language:    Haskell2010
 
 source-repository head
   type:     git
-  location: https://github.com/githubuser/github-haskell
+  location: https://github.com/githubuser/haskell-tools
