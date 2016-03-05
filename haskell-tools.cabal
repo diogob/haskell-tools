@@ -24,6 +24,7 @@ library
                      , bytestring >= 0.10
                      , lens-aeson
                      , aeson
+                     , pipes
   default-language:    Haskell2010
   default-extensions:  OverloadedStrings
 
@@ -33,6 +34,7 @@ executable haskell-tools-exe
   ghc-options:         -Wall -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base
                      , haskell-tools
+                     , pipes
   default-language:    Haskell2010
 
 test-suite haskell-tools-test
