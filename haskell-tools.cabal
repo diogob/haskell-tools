@@ -25,6 +25,9 @@ library
                      , lens-aeson
                      , aeson
                      , pipes
+                     , split
+                     , text
+                     , scientific >= 0.3
   default-language:    Haskell2010
   default-extensions:  OverloadedStrings
 
