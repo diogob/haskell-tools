@@ -6,11 +6,20 @@ resolver: lts-5.0
 # Local packages, usually specified by relative directory name
 packages:
 - '.'
+- location: 
+    git: 'git@github.com:diogob/spyglass.git'
+    commit: 'master'
 
 # Packages to be pulled from upstream that are not in the resolver (e.g., acme-missiles-0.3)
-extra-deps: 
-  - github-0.13.2
+extra-deps:
   - failure-0.2.0.3
+  - hasql-transaction-0.4.3
+  - bytestring-tree-builder-0.2.5
+  - hasql-0.19.9
+  - hasql-pool-0.4
+  - hasql-transaction-0.4.3
+  - postgresql-error-codes-1
+  - postgresql-binary-0.8.1
 
 # Override default flag values for local packages and extra-deps
 flags: {}
