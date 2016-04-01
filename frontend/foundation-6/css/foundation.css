@@ -12,7 +12,7 @@
    *    without disabling user zoom.
    */
 html {
-  font-family: sans-serif;
+  font-family: 'Open Sans', sans-serif;
   /* 1 */
   -ms-text-size-adjust: 100%;
   /* 2 */
@@ -361,9 +361,6 @@ td,
 th {
   padding: 0; }
 
-.foundation-mq {
-  font-family: "small=0em&medium=40em&large=64em&xlarge=75em&xxlarge=90em"; }
-
 html {
   font-size: 100%;
   box-sizing: border-box; }
@@ -376,7 +373,6 @@ html {
 body {
   padding: 0;
   margin: 0;
-  font-family: "Helvetica Neue", Helvetica, Roboto, Arial, sans-serif;
   font-weight: normal;
   line-height: 1.5;
   color: #0a0a0a;
@@ -468,7 +464,6 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: "Helvetica Neue", Helvetica, Roboto, Arial, sans-serif;
   font-weight: normal;
   font-style: normal;
   color: inherit;
