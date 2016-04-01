@@ -120,6 +120,7 @@ dfn {
    */
 h1 {
   font-size: 2em;
+  font-weight: bold;
   margin: 0.67em 0; }
 
 /**
@@ -464,7 +465,6 @@ h3,
 h4,
 h5,
 h6 {
-  font-weight: normal;
   font-style: normal;
   color: inherit;
   text-rendering: optimizeLegibility;
