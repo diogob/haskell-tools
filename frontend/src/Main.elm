@@ -1,29 +1,81 @@
 module Main where
 
-import Html exposing (div, button, text)
+import Html exposing (Html, ol, li, div, button, text)
 import Html.Events exposing (onClick)
-import StartApp.Simple as StartApp
+import StartApp
+import Effects exposing (Effects, Never)
+import Http
+import Json.Decode exposing (Decoder, decodeValue, succeed, string, list, int, (:=))
+import Json.Decode.Extra exposing ((|:))
 
+import Task
 
-main =
-  StartApp.start { model = model, view = view, update = update }
+-- main : App Repos
+app = StartApp.start { init = init, update = update, view = view, inputs = [] }
 
+main = app.html
 
-model = 0
+(=>) = (,)
 
+init : (Repos, Effects Action)
+init = ( []
+       , getTopRepos
+       )
 
+port tasks : Signal (Task.Task Never ())
+port tasks = app.tasks
+
+view : Signal.Address Action -> Repos -> Html
 view address model =
-  div []
-    [ button [ onClick address Decrement ] [ text "-" ]
-    , div [] [ text (toString model) ]
-    , button [ onClick address Increment ] [ text "+" ]
-    ]
+  let repos = List.map (repoView address) model
+  in ol [] repos
 
 
-type Action = Increment | Decrement
+type Action
+  = RequestMore
+  | NewRepos (Maybe (List Repo))
 
+type alias Repos = List Repo
 
+type alias Repo =
+  { name: String
+  , owner: String
+  , url: String
+  , watchers: Int
+  , forks: Int
+  }
+
+update : Action -> Repos -> (Repos, Effects Action)
 update action model =
   case action of
-    Increment -> model + 1
-    Decrement -> model - 1
+    RequestMore -> (model, getTopRepos)
+    NewRepos maybeRepos -> ( Maybe.withDefault [] maybeRepos
+                           , Effects.none
+                           )
+
+getTopRepos : Effects Action
+getTopRepos =
+  Http.get decodeRepos topReposUrl
+    |> Task.toMaybe
+    |> Task.map NewRepos
+    |> Effects.task
+
+topReposUrl : String
+topReposUrl = "http://localhost:3000/top_repos"
+
+decodeRepos : Decoder (List Repo)
+decodeRepos =
+  list (succeed Repo
+      |: ("name" := string)
+      |: ("owner" := string)
+      |: ("url" := string)
+      |: ("watchers" := int)
+      |: ("forks" := int))
+
+repoView : Signal.Address Action -> Repo -> Html
+repoView address model =
+  li []
+        [ text model.name
+        , text " / "
+        , text model.owner
+        ]
