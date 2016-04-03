@@ -1,6 +1,7 @@
 module Main where
 
-import Html exposing (Html, ol, li, div, button, text)
+import Html exposing (Html, ol, li, div, button, text, a)
+import Html.Attributes exposing (href, target)
 import Html.Events exposing (onClick)
 import StartApp
 import Effects exposing (Effects, Never)
@@ -75,7 +76,8 @@ decodeRepos =
 repoView : Signal.Address Action -> Repo -> Html
 repoView address model =
   li []
-        [ text model.name
-        , text " / "
-        , text model.owner
+        [ a [href model.url, target "blank"] [ text model.owner
+               , text " / "
+               , text model.name
+               ]
         ]

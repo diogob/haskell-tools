@@ -521,14 +521,22 @@ h6 {
     font-size: 1rem; } }
 
 a {
-  color: #2199e8;
-  text-decoration: none;
-  line-height: inherit;
-  cursor: pointer; }
-  a:hover, a:focus {
-    color: #1585cf; }
-  a img {
-    border: 0; }
+    color: #7B14CC;
+    text-decoration: none;
+    line-height: inherit;
+    cursor: pointer;
+}
+a:visited {
+    color: #847151;
+}
+
+a:hover,
+a:focus {
+    text-decoration: underline
+}
+a img {
+    border: 0;
+}
 
 hr {
   max-width: 75rem;
@@ -992,3 +1000,12 @@ table.hover tr:nth-of-type(even):hover {
 
 .clearfix::after {
   clear: both; }
+
+
+/**
+ * App specific styles
+ */
+
+#elm-app {
+    padding: 2rem;
+}
