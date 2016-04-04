@@ -9,6 +9,8 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import Data.Monoid ((<>))
 import HaskellTools.Github
+import Data.Scientific (toBoundedInteger)
+import Data.Maybe (fromMaybe)
 
 insertRepos :: H.Connection -> [Repo] -> IO ()
 insertRepos con repos =
@@ -26,5 +28,4 @@ insertRepo r = S.showt $ S.insert "public.repos" columns values
   where
     columns = S.fromList ["name", "owner", "url", "watchers", "forks"]
     values = S.fromList [name r, owner r, url r, s2t $ watchers r, s2t $ forks r]
-    s2t = T.pack . show . toInteger
-
+    s2t = T.pack . show . fromMaybe (0 :: Int) . toBoundedInteger
