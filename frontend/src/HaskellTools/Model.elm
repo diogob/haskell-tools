@@ -5,18 +5,6 @@ import Json.Decode exposing (Decoder, string, list, int)
 import Json.Decode.Pipeline exposing (decode, required, optional)
 
 
---Config
-
-
-topReposUrl : String
-topReposUrl =
-  "http://localhost:3000/top_repos"
-
-
-
--- Model
-
-
 type alias Model =
   List Repo.Model
 
