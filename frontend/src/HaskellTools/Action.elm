@@ -4,5 +4,4 @@ import HaskellTools.Model exposing (Model)
 
 
 type Action
-  = RequestMore
-  | NewRepos (Maybe Model)
+  = NewRepos (Maybe Model)

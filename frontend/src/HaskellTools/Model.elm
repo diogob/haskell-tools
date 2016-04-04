@@ -1,5 +1,6 @@
 module HaskellTools.Model (..) where
 
+import HaskellTools.Repo.Model as Repo
 import Json.Decode exposing (Decoder, string, list, int)
 import Json.Decode.Pipeline exposing (decode, required, optional)
 
@@ -17,21 +18,12 @@ topReposUrl =
 
 
 type alias Model =
-  List Repo
-
-
-type alias Repo =
-  { name : String
-  , owner : String
-  , url : String
-  , watchers : Int
-  , forks : Int
-  }
+  List Repo.Model
 
 
 decodeRepos : Decoder Model
 decodeRepos =
-  decode Repo
+  decode Repo.Model
     |> required "name" string
     |> required "owner" string
     |> required "url" string
