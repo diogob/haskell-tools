@@ -9,8 +9,8 @@ type alias Model =
   List Repo.Model
 
 
-decodeRepos : Decoder Model
-decodeRepos =
+decodeModel : Decoder Model
+decodeModel =
   decode Repo.Model
     |> required "name" string
     |> required "owner" string

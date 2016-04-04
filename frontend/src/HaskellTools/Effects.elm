@@ -1,7 +1,7 @@
 module HaskellTools.Effects (..) where
 
 import Effects exposing (Effects, Never)
-import HaskellTools.Model exposing (Model, decodeRepos)
+import HaskellTools.Model exposing (Model, decodeModel)
 import HaskellTools.Action exposing (..)
 import Http
 import Task
@@ -14,7 +14,7 @@ topReposUrl =
 
 getTopRepos : Effects Action
 getTopRepos =
-  Http.get decodeRepos topReposUrl
+  Http.get decodeModel topReposUrl
     |> Task.toMaybe
     |> Task.map NewRepos
     |> Effects.task
