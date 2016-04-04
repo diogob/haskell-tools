@@ -1,58 +1,40 @@
 module Main (..) where
 
+import Effects exposing (Effects, Never)
 import Html exposing (Html, ol, li, div, button, text, a)
 import Html.Attributes exposing (href, target)
-import Html.Events exposing (onClick)
-import StartApp
-import Effects exposing (Effects, Never)
 import Http
 import Json.Decode exposing (Decoder, decodeValue, succeed, string, list, int, (:=))
 import Json.Decode.Extra exposing ((|:))
+import StartApp
 import Task
 
 
--- main : App Repos
+--Config
 
 
-app =
-  StartApp.start { init = init, update = update, view = view, inputs = [] }
+topReposUrl : String
+topReposUrl =
+  "http://localhost:3000/top_repos"
 
 
-main =
-  app.html
+decodeRepos : Decoder Model
+decodeRepos =
+  list
+    (succeed Repo
+      |: ("name" := string)
+      |: ("owner" := string)
+      |: ("url" := string)
+      |: ("watchers" := int)
+      |: ("forks" := int)
+    )
 
 
-(=>) =
-  (,)
+
+-- Model
 
 
-init : ( Repos, Effects Action )
-init =
-  ( []
-  , getTopRepos
-  )
-
-
-port tasks : Signal (Task.Task Never ())
-port tasks =
-  app.tasks
-
-
-view : Signal.Address Action -> Repos -> Html
-view address model =
-  let
-    repos =
-      List.map (repoView address) model
-  in
-    ol [] repos
-
-
-type Action
-  = RequestMore
-  | NewRepos (Maybe (List Repo))
-
-
-type alias Repos =
+type alias Model =
   List Repo
 
 
@@ -65,7 +47,21 @@ type alias Repo =
   }
 
 
-update : Action -> Repos -> ( Repos, Effects Action )
+init : ( Model, Effects Action )
+init =
+  ( [], getTopRepos )
+
+
+
+-- Update
+
+
+type Action
+  = RequestMore
+  | NewRepos (Maybe (List Repo))
+
+
+update : Action -> Model -> ( Model, Effects Action )
 update action model =
   case action of
     RequestMore ->
@@ -77,29 +73,15 @@ update action model =
       )
 
 
-getTopRepos : Effects Action
-getTopRepos =
-  Http.get decodeRepos topReposUrl
-    |> Task.toMaybe
-    |> Task.map NewRepos
-    |> Effects.task
+
+-- View
 
 
-topReposUrl : String
-topReposUrl =
-  "http://localhost:3000/top_repos"
-
-
-decodeRepos : Decoder (List Repo)
-decodeRepos =
-  list
-    (succeed Repo
-      |: ("name" := string)
-      |: ("owner" := string)
-      |: ("url" := string)
-      |: ("watchers" := int)
-      |: ("forks" := int)
-    )
+view : Signal.Address Action -> Model -> Html
+view address model =
+  ol
+    []
+    (List.map (repoView address) model)
 
 
 repoView : Signal.Address Action -> Repo -> Html
@@ -108,8 +90,45 @@ repoView address model =
     []
     [ a
         [ href model.url, target "blank" ]
-        [ text model.owner
-        , text " / "
-        , text model.name
-        ]
+        [ text <| model.owner ++ " / " ++ model.name ]
     ]
+
+
+
+-- Main
+
+
+app : StartApp.App Model
+app =
+  StartApp.start
+    { init = init
+    , update = update
+    , view = view
+    , inputs = []
+    }
+
+
+main : Signal Html
+main =
+  app.html
+
+
+
+-- Effects
+
+
+getTopRepos : Effects Action
+getTopRepos =
+  Http.get decodeRepos topReposUrl
+    |> Task.toMaybe
+    |> Task.map NewRepos
+    |> Effects.task
+
+
+
+-- Ports
+
+
+port tasks : Signal (Task.Task Never ())
+port tasks =
+  app.tasks
