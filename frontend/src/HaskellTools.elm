@@ -4,7 +4,7 @@ import Effects exposing (Effects, Never)
 import HaskellTools.Effects exposing (getTopRepos)
 import HaskellTools.Model exposing (Model)
 import HaskellTools.Update exposing (update)
-import HaskellTools.View exposing (view)
+import HaskellTools.View.App exposing (view)
 import Html exposing (Html)
 import StartApp
 import Task

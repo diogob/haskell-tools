@@ -1006,6 +1006,6 @@ table.hover tr:nth-of-type(even):hover {
  * App specific styles
  */
 
-#elm-app {
+.app-body {
     padding: 2rem;
 }
