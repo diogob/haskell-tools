@@ -4,8 +4,8 @@ import Effects exposing (Effects, Never)
 import Html exposing (Html, ol, li, div, button, text, a)
 import Html.Attributes exposing (href, target)
 import Http
-import Json.Decode exposing (Decoder, decodeValue, succeed, string, list, int, (:=))
-import Json.Decode.Extra exposing ((|:))
+import Json.Decode exposing (Decoder, string, list, int)
+import Json.Decode.Pipeline exposing (decode, required, optional)
 import StartApp
 import Task
 
@@ -20,14 +20,13 @@ topReposUrl =
 
 decodeRepos : Decoder Model
 decodeRepos =
-  list
-    (succeed Repo
-      |: ("name" := string)
-      |: ("owner" := string)
-      |: ("url" := string)
-      |: ("watchers" := int)
-      |: ("forks" := int)
-    )
+  decode Repo
+    |> required "name" string
+    |> required "owner" string
+    |> required "url" string
+    |> optional "watchers" int 0
+    |> optional "forks" int 0
+    |> list
 
 
 
