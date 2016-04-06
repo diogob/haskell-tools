@@ -29,7 +29,7 @@ library
                      , split
                      , text
                      , scientific >= 0.3
-                     , spyglass
+                     , pasta
                      , hasql
   default-language:    Haskell2010
   default-extensions:  OverloadedStrings

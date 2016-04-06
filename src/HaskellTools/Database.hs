@@ -2,7 +2,7 @@ module HaskellTools.Database
     ( insertRepos
     ) where
 
-import qualified Spyglass as S
+import qualified Pasta as P
 import qualified Hasql.Connection as H
 import qualified Hasql.Session as H
 import qualified Data.Text as T
@@ -24,8 +24,8 @@ insertRepos con repos =
         Right _ -> print ("Inserted repo info" :: String)
 
 insertRepo :: Repo -> T.Text
-insertRepo r = S.showt $ S.insert "public.repos" columns values
+insertRepo r = P.showt $ P.insert "public.repos" columns values
   where
-    columns = S.fromList ["name", "owner", "url", "watchers", "forks"]
-    values = S.fromList [name r, owner r, url r, s2t $ watchers r, s2t $ forks r]
+    columns = P.fromList ["name", "owner", "url", "watchers", "forks"]
+    values = P.fromList [name r, owner r, url r, s2t $ watchers r, s2t $ forks r]
     s2t = T.pack . show . fromMaybe (0 :: Int) . toBoundedInteger
