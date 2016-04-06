@@ -19,7 +19,7 @@ CREATE SCHEMA api;
 CREATE VIEW api.top_repos AS
 SELECT * FROM repos ORDER BY (watchers * forks) DESC;
 
-CREATE ROLE postgrest;
+CREATE USER postgrest PASSWORD :password;
 CREATE ROLE anonymous;
 GRANT anonymous TO postgrest;
 GRANT USAGE ON SCHEMA api TO anonymous;
