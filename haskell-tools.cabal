@@ -16,8 +16,10 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   ghc-options:         -Wall
-  exposed-modules:     HaskellTools
-  other-modules:       HaskellTools.Github
+  exposed-modules:   HaskellTools
+                   , HaskellTools.Config 
+  other-modules:     Paths_haskell_tools
+                     , HaskellTools.Github
                      , HaskellTools.Database
   build-depends:       base >= 4.7 && < 5
                      , wreq
@@ -29,12 +31,14 @@ library
                      , split
                      , text
                      , scientific >= 0.3
+                     , optparse-applicative >= 0.12
+                     , string-conversions >= 0.4
                      , pasta
                      , hasql
   default-language:    Haskell2010
   default-extensions:  OverloadedStrings
 
-executable haskell-tools-exe
+executable haskell-tools-load
   hs-source-dirs:      app
   main-is:             Main.hs
   ghc-options:         -Wall -threaded -rtsopts -with-rtsopts=-N
@@ -42,6 +46,7 @@ executable haskell-tools-exe
                      , haskell-tools
                      , pipes
                      , hasql
+                     , string-conversions >= 0.4
   default-language:    Haskell2010
   default-extensions:  OverloadedStrings
 

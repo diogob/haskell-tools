@@ -1,18 +1,20 @@
 module Main where
 
 import HaskellTools
+import HaskellTools.Config
 import Data.List (intercalate)
 import Pipes
 import Hasql.Connection
+import Data.String.Conversions (cs)
 
 main :: IO ()
 main = do
+  conf <- readOptions
+  let dbConfig = cs $ configDatabase conf
   conOrError <- acquire dbConfig
   case conOrError of
     Left _ -> error "Error connecting"
     Right c -> runEffect $ loop c
-  where
-    dbConfig = settings "localhost" 5432 "diogo" "" "haskell_tools"
 
 loop :: Connection -> Effect IO ()
 loop con = for (haskellRepos 1) (lift . insertRepos con)
