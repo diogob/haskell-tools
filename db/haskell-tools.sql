@@ -7,10 +7,22 @@ CREATE DATABASE haskell_tools;
 CREATE TABLE public.repos (
   name text,
   owner text,
-  url text,
-  watchers integer,
+  stars integer,
   forks integer,
   PRIMARY KEY (name, owner)
+);
+
+CREATE TABLE public.packages (
+  name text,
+  version text NOT NULL,
+  license text NOT NULL,
+  description text NOT NULL,
+  category text NOT NULL,
+  homepage text NOT NULL,
+  package_url text NOT NULL,
+  repo_type text,
+  repo_location text,
+  PRIMARY KEY (name)
 );
 
 -- API exposed through PostgREST

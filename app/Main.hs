@@ -2,6 +2,9 @@ module Main where
 
 import HaskellTools
 import HaskellTools.Config
+import HaskellTools.Hackage
+import HaskellTools.Database
+
 import Data.List (intercalate)
 import Pipes
 import Hasql.Connection
@@ -17,4 +20,4 @@ main = do
     Right c -> runEffect $ loop c
 
 loop :: Connection -> Effect IO ()
-loop con = for (haskellRepos 1) (lift . insertRepos con)
+loop con = for (haskellPackages 0) (lift . insertPkgs con)
