@@ -22,7 +22,7 @@ import Data.Maybe (fromMaybe)
 import Control.Lens
 import Distribution.PackageDescription
 import Distribution.Package
-import Distribution.Version
+import Distribution.Text
 
 insertRepos :: H.Connection -> [Repo] -> IO ()
 insertRepos con repos =
@@ -64,16 +64,16 @@ insertPkg p =
   where
     columns = fromList ["name", "version", "license", "description", "category", "homepage", "package_url", "repo_type", "repo_location"]
     values = fromList [p2name p, p2version p, p2license p, p2desc p, p2cat p, p2homepage p, p2pkgUrl p, p2repoType, p2repoLocation]
-    p2name = showt . show . pkgName . package
-    p2version = T.intercalate "." . map (T.pack . show) . versionBranch . pkgVersion . package
-    p2license = T.pack . show . license
+    p2name = T.pack . display . pkgName . package
+    p2version = T.pack . display . pkgVersion . package
+    p2license = T.pack . display . license
     p2desc = T.pack . description
     p2cat = T.pack . category
     p2homepage = T.pack . homepage
     p2pkgUrl = T.pack . pkgUrl
     repos = sourceRepos p
-    reposTypes = map (T.pack . show . repoKind) repos
-    reposLocations = map (T.pack . show . fromMaybe "NULL" . repoLocation) repos
+    reposTypes = map (T.pack . display . fromMaybe (OtherRepoType "Unkonwn") . repoType) repos
+    reposLocations = map (T.pack . fromMaybe "NULL" . repoLocation) repos
     p2repoType = if null reposTypes
                     then "NULL"
                     else head reposTypes
