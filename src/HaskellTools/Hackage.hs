@@ -22,4 +22,4 @@ packages page = do
       pkgDescriptions = map (packageDescription . snd . latestVersion)
       slice from to xs = take (to - from + 1) (drop from xs)
       pageSlice = slice (page * pageSize) (page * pageSize + pageSize)
-      pageSize = 10
+      pageSize = 1000
