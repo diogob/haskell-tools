@@ -3,7 +3,7 @@ module HaskellTools.Hackage where
 import qualified Distribution.Hackage.DB as DB
 import Distribution.PackageDescription
 
-import Control.Monad (unless)
+import Control.Monad (unless, liftM)
 import Pipes
 
 haskellPackages :: Int -> Producer [PackageDescription] IO ()
@@ -14,9 +14,7 @@ haskellPackages page = do
     haskellPackages $ page + 1
 
 packages :: Int -> IO [PackageDescription]
-packages page = do
-  db <- DB.readHackage
-  return $ pageSlice $ pkgDescriptions $ DB.toAscList db
+packages page = liftM (pageSlice . pkgDescriptions . DB.toAscList) DB.readHackage
     where
       latestVersion = head . DB.toDescList . snd
       pkgDescriptions = map (packageDescription . snd . latestVersion)
