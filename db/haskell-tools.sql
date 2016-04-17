@@ -25,6 +25,12 @@ CREATE TABLE public.packages (
   PRIMARY KEY (name)
 );
 
+CREATE TABLE public.dependencies (
+  name text REFERENCES public.packages (name),
+  dependency_name text REFERENCES public.packages (name),
+  PRIMARY KEY (name, dependency_name)
+);
+
 CREATE VIEW public.package_repos AS
 SELECT
   p.name,
