@@ -1,4 +1,7 @@
-module HaskellTools.Hackage (producePackages) where
+module HaskellTools.Hackage ( producePackages
+                            , producePackagesWithDeps
+                            , PackageWithDeps
+                            ) where
 
 import qualified Distribution.Hackage.DB as DB
 import Distribution.Package
@@ -9,6 +12,8 @@ import Control.Monad (unless, liftM)
 import Pipes
 import Data.Maybe
 
+type PackageWithDeps = (PackageDescription, [Extension], [Dependency])
+
 producePackages :: Int -> Producer [PackageDescription] IO ()
 producePackages page = do
   pkgs <- lift $ packages page
@@ -16,10 +21,17 @@ producePackages page = do
     yield pkgs
     producePackages $ page + 1
 
+producePackagesWithDeps :: Int -> Producer [PackageWithDeps] IO ()
+producePackagesWithDeps page = do
+  pkgs <- lift $ packagesWithDeps page
+  unless (null pkgs) $ do
+    yield pkgs
+    producePackagesWithDeps $ page + 1
+
 packages :: Int -> IO [PackageDescription]
 packages page = liftM (map (\(p, _, _) -> p)) $ packagesWithDeps page
 
-packagesWithDeps :: Int -> IO [(PackageDescription, [Extension], [Dependency])]
+packagesWithDeps :: Int -> IO [PackageWithDeps]
 packagesWithDeps page = liftM (pageSlice . pkgsWithDeps . DB.toAscList) DB.readHackage
     where
       latestVersion = head . DB.toDescList . snd

@@ -5,15 +5,15 @@ CREATE DATABASE haskell_tools;
 -- Private data structures
 
 CREATE TABLE public.repos (
-  name text,
+  repo_name text,
   owner text,
   stars integer,
   forks integer,
-  PRIMARY KEY (name, owner)
+  PRIMARY KEY (repo_name, owner)
 );
 
 CREATE TABLE public.packages (
-  name text,
+  package_name text,
   version text NOT NULL,
   license text NOT NULL,
   description text NOT NULL,
@@ -22,18 +22,25 @@ CREATE TABLE public.packages (
   package_url text NOT NULL,
   repo_type text,
   repo_location text,
-  PRIMARY KEY (name)
+  PRIMARY KEY (package_name)
 );
 
 CREATE TABLE public.dependencies (
-  name text REFERENCES public.packages (name),
-  dependency_name text REFERENCES public.packages (name),
-  PRIMARY KEY (name, dependency_name)
+  dependent text REFERENCES public.packages (package_name),
+  dependency text REFERENCES public.packages (package_name),
+  version_range text,
+  PRIMARY KEY (dependent, dependency)
+);
+
+CREATE TABLE public.extensions (
+  package_name text REFERENCES public.packages (package_name),
+  extension text,
+  PRIMARY KEY (package_name, extension)
 );
 
 CREATE VIEW public.package_repos AS
 SELECT
-  p.name,
+  p.package_name,
   r[1] as owner,
   r[2] as repo
 FROM
