@@ -20,4 +20,4 @@ main = do
     Right c -> runEffect $ loop c
 
 loop :: Connection -> Effect IO ()
-loop con = for (haskellPackages 0) (lift . insertPkgs con)
+loop con = for (producePackages 0) (lift . insertPkgs con)

@@ -1,4 +1,4 @@
-module HaskellTools.Hackage where
+module HaskellTools.Hackage (producePackages) where
 
 import qualified Distribution.Hackage.DB as DB
 import Distribution.Package
@@ -9,12 +9,12 @@ import Control.Monad (unless, liftM)
 import Pipes
 import Data.Maybe
 
-haskellPackages :: Int -> Producer [PackageDescription] IO ()
-haskellPackages page = do
+producePackages :: Int -> Producer [PackageDescription] IO ()
+producePackages page = do
   pkgs <- lift $ packages page
   unless (null pkgs) $ do
     yield pkgs
-    haskellPackages $ page + 1
+    producePackages $ page + 1
 
 packages :: Int -> IO [PackageDescription]
 packages page = liftM (map (\(p, _, _) -> p)) $ packagesWithDeps page
