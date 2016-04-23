@@ -4,14 +4,6 @@ CREATE DATABASE haskell_tools;
 
 -- Private data structures
 
-CREATE TABLE public.repos (
-  repo_name text,
-  owner text,
-  stars integer,
-  forks integer,
-  PRIMARY KEY (repo_name, owner)
-);
-
 CREATE TABLE public.packages (
   package_name text,
   version text NOT NULL,
@@ -23,6 +15,13 @@ CREATE TABLE public.packages (
   repo_type text,
   repo_location text,
   PRIMARY KEY (package_name)
+);
+
+CREATE TABLE public.repos (
+  package_name text PRIMARY KEY REFERENCES packages,
+  stars integer NOT NULL DEFAULT 0,
+  forks integer NOT NULL DEFAULT 0,
+  collaborators integer NOT NULL DEFAULT 1
 );
 
 CREATE TABLE public.dependencies (
@@ -49,11 +48,21 @@ FROM
 WHERE
   repo_location ~* 'github';
 
+CREATE VIEW public.categories AS
+SELECT
+  p.package_name,
+  btrim(c.c) AS category_name
+FROM
+  packages p,
+  LATERAL regexp_split_to_table(p.category, ','::text) c(c)
+WHERE
+  btrim(c.c) <> ''::text;
+
 -- API exposed through PostgREST
 CREATE SCHEMA api;
 
 CREATE VIEW api.top_repos AS
-SELECT * FROM repos ORDER BY (watchers * forks) DESC;
+SELECT * FROM repos ORDER BY (stars * forks) DESC;
 
 CREATE USER postgrest PASSWORD :password;
 CREATE ROLE anonymous;
