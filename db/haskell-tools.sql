@@ -48,10 +48,10 @@ FROM
 WHERE
   repo_location ~* 'github';
 
-CREATE VIEW public.categories AS
+CREATE OR REPLACE VIEW public.categories AS
 SELECT
   p.package_name,
-  btrim(c.c) AS category_name
+  initcap(btrim(translate(c.c, chr(10) || chr(13), ''))) AS category_name
 FROM
   packages p,
   LATERAL regexp_split_to_table(p.category, ','::text) c(c)
