@@ -39,6 +39,7 @@ library
                      , Cabal
                      , pasta
                      , hasql
+                     , http-types
   default-language:    Haskell2010
   default-extensions:  OverloadedStrings
 

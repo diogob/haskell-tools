@@ -1,6 +1,5 @@
 module HaskellTools.Database
-    ( insertRepos
-    , insertPkgs
+    ( insertPkgs
     , insertDeps
     ) where
 
@@ -28,8 +27,8 @@ import Distribution.Package
 import Distribution.Text
 import Language.Haskell.Extension
 
-insertRepos :: H.Connection -> [Repo] -> IO ()
-insertRepos = runInserts insertRepo
+--insertRepos :: H.Connection -> [Repo] -> IO ()
+--insertRepos = runInserts insertRepo
 
 insertPkgs :: H.Connection -> [PackageDescription] -> IO ()
 insertPkgs = runInserts insertPkg
@@ -37,15 +36,14 @@ insertPkgs = runInserts insertPkg
 insertDeps :: H.Connection -> [PackageWithDeps] -> IO ()
 insertDeps = runInserts insertPackageWithDeps
 
-insertRepo :: Repo -> T.Text
-insertRepo r =
+insertRepo :: T.Text -> Repo -> T.Text
+insertRepo pn r =
   showt $
   insert "public.repos" columns values
-  & onConflict .~ doUpdate "repos_pkey" ["watchers" =.= ("EXCLUDED"//"watchers"), "forks" =.= ("EXCLUDED"//"forks")]
+  & onConflict .~ doUpdate "repos_pkey" ["stars" =.= ("EXCLUDED"//"stars"), "forks" =.= ("EXCLUDED"//"forks"), "collaborators" =.= ("EXCLUDED"//"collaborators")]
   where
-    columns = fromList ["repo_name", "owner", "url", "watchers", "forks"]
-    values = fromList [name r, owner r, url r, s2t $ watchers r, s2t $ forks r]
-    s2t = T.pack . show . fromMaybe (0 :: Int) . toBoundedInteger
+    columns = fromList ["package_name", "stars", "forks", "collaborators"]
+    values = fromList [pn, showt $ stars r, showt $ forks r, showt $ collaborators r]
 
 runInserts :: (a -> T.Text) -> H.Connection -> [a] -> IO ()
 runInserts insertFn con pkgs =
