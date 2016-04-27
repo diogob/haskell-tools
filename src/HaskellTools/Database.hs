@@ -3,7 +3,8 @@ module HaskellTools.Database
     , insertDeps
     ) where
 
-import Pasta ( insert
+import Pasta ( selectFrom
+             , insert
              , doUpdate
              , doNothing
              , onConflict
@@ -14,18 +15,23 @@ import Pasta ( insert
              )
 import qualified Hasql.Connection as H
 import qualified Hasql.Session as H
+import qualified Hasql.Query as H
+import qualified Hasql.Decoders as HD
+import qualified Hasql.Encoders as HE
+
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import Data.Monoid ((<>))
 import HaskellTools.Github
 import HaskellTools.Hackage
-import Data.Scientific (toBoundedInteger)
 import Data.Maybe (fromMaybe)
 import Control.Lens
 import Distribution.PackageDescription
 import Distribution.Package
 import Distribution.Text
 import Language.Haskell.Extension
+
+import Data.Vector (Vector)
 
 --insertRepos :: H.Connection -> [Repo] -> IO ()
 --insertRepos = runInserts insertRepo
@@ -108,3 +114,18 @@ insertExt p e =
     columns = fromList ["package_name", "extension"]
     values = fromList [p2name p, e2extension e]
     e2extension = T.pack . display
+
+type PackageRepos = (Vector (T.Text, T.Text, T.Text))
+
+fetchPackageRepos :: H.Connection -> IO (Either H.Error PackageRepos)
+fetchPackageRepos =
+  H.run $ H.query () selectPackageRepos
+
+decodePackageRepos :: HD.Result PackageRepos
+decodePackageRepos =
+  HD.rowsVector $ (,,) <$> HD.value HD.text <*> HD.value HD.text <*> HD.value HD.text
+
+selectPackageRepos :: H.Query () PackageRepos
+selectPackageRepos =
+  H.statement template HE.unit decodePackageRepos False
+    where template = T.encodeUtf8 $ showt $ selectFrom "package_repos"
