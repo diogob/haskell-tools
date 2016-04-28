@@ -1,6 +1,8 @@
 module HaskellTools.Database
     ( insertPkgs
     , insertDeps
+    , insertRepos
+    , fetchPackageRepos
     ) where
 
 import Pasta ( selectFrom
@@ -22,8 +24,8 @@ import qualified Hasql.Encoders as HE
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import Data.Monoid ((<>))
-import HaskellTools.Github
 import HaskellTools.Hackage
+import HaskellTools.Types
 import Data.Maybe (fromMaybe)
 import Control.Lens
 import Distribution.PackageDescription
@@ -31,10 +33,9 @@ import Distribution.Package
 import Distribution.Text
 import Language.Haskell.Extension
 
-import Data.Vector (Vector)
 
---insertRepos :: H.Connection -> [Repo] -> IO ()
---insertRepos = runInserts insertRepo
+insertRepos :: H.Connection -> [Repo] -> IO ()
+insertRepos = runInserts insertRepo
 
 insertPkgs :: H.Connection -> [PackageDescription] -> IO ()
 insertPkgs = runInserts insertPkg
@@ -42,14 +43,14 @@ insertPkgs = runInserts insertPkg
 insertDeps :: H.Connection -> [PackageWithDeps] -> IO ()
 insertDeps = runInserts insertPackageWithDeps
 
-insertRepo :: T.Text -> Repo -> T.Text
-insertRepo pn r =
+insertRepo :: Repo -> T.Text
+insertRepo r =
   showt $
   insert "public.repos" columns values
   & onConflict .~ doUpdate "repos_pkey" ["stars" =.= ("EXCLUDED"//"stars"), "forks" =.= ("EXCLUDED"//"forks"), "collaborators" =.= ("EXCLUDED"//"collaborators")]
   where
     columns = fromList ["package_name", "stars", "forks", "collaborators"]
-    values = fromList [pn, showt $ stars r, showt $ forks r, showt $ collaborators r]
+    values = fromList [repoPackageName r, showt $ stars r, showt $ forks r, showt $ collaborators r]
 
 runInserts :: (a -> T.Text) -> H.Connection -> [a] -> IO ()
 runInserts insertFn con pkgs =
@@ -114,8 +115,6 @@ insertExt p e =
     columns = fromList ["package_name", "extension"]
     values = fromList [p2name p, e2extension e]
     e2extension = T.pack . display
-
-type PackageRepos = (Vector (T.Text, T.Text, T.Text))
 
 fetchPackageRepos :: H.Connection -> IO (Either H.Error PackageRepos)
 fetchPackageRepos =

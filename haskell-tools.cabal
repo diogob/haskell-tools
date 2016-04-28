@@ -23,6 +23,7 @@ library
                    , HaskellTools.Database
 
   other-modules:     Paths_haskell_tools
+                   , HaskellTools.Types
   build-depends:       base >= 4.7 && < 5
                      , wreq
                      , lens
