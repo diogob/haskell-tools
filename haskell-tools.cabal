@@ -42,6 +42,7 @@ library
                      , hasql
                      , vector >= 0.11
                      , http-types
+                     , http-client >= 0.4
   default-language:    Haskell2010
   default-extensions:  OverloadedStrings
 
