@@ -10,7 +10,6 @@ import Network.Wreq ( getWith
                     , Response
                     , defaults
                     , basicAuth
-                    , statusCode
                     )
 
 import Network.HTTP.Client (HttpException(..))

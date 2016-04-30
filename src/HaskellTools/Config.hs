@@ -5,11 +5,7 @@ module HaskellTools.Config ( prettyVersion
                         )
        where
 
-import           Control.Applicative
-import qualified Data.ByteString.Char8       as BS
 import           Data.List                   (intercalate)
-import           Data.String.Conversions     (cs)
-import           Data.Text                   (strip)
 import           Data.Version                (versionBranch)
 import           Options.Applicative
 import           Paths_haskell_tools             (version)
