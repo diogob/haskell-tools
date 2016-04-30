@@ -73,9 +73,10 @@ mkRepo :: Options -> Text -> Text -> Text -> IO (Maybe Repo)
 mkRepo options pkgName repoOwner repoName =
   getRepo `E.catch` handler
   where
-    handler e@(StatusCodeException s _ _)
-      | s ^. statusCode == 404 = return Nothing
-      | otherwise              = throwIO e
+    handler :: HttpException -> IO (Maybe Repo)
+    handler e = do
+      print $ "Error fetching repo info" ++ show e
+      return Nothing
     getRepo = do
       info <- repo options ro rn
       stats <- repoStats options ro rn
