@@ -1,11 +1,7 @@
 module Main where
 
 import HaskellTools
-import HaskellTools.Config
-import HaskellTools.Hackage
-import HaskellTools.Database
 
-import Data.List (intercalate)
 import Pipes
 import Hasql.Connection
 import Data.String.Conversions (cs)
