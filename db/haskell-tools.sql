@@ -133,4 +133,4 @@ CREATE USER postgrest PASSWORD :password;
 CREATE ROLE anonymous;
 GRANT anonymous TO postgrest;
 GRANT USAGE ON SCHEMA api TO anonymous;
-GRANT SELECT ON api.top_repos TO anonymous;
+GRANT SELECT ON api.packages TO anonymous;
