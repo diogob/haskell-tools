@@ -9,7 +9,6 @@ import Html exposing (Html)
 import StartApp
 import Task
 
-
 app : StartApp.App Model
 app =
   StartApp.start
@@ -19,16 +18,11 @@ app =
     , inputs = []
     }
 
-
 main : Signal Html
 main =
   app.html
 
-
-
 -- Ports
-
-
 port tasks : Signal (Task.Task Never ())
 port tasks =
   app.tasks
