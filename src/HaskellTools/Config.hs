@@ -14,6 +14,7 @@ import           Paths_haskell_tools             (version)
 data AppConfig = AppConfig { configDatabase  :: String
                            , ghUser :: String
                            , ghPass :: String
+                           , onlyGh :: Bool
                            }
 
 argParser :: Parser AppConfig
@@ -21,6 +22,7 @@ argParser = AppConfig
   <$> argument str (help "(REQUIRED) database connection string, e.g. postgres://user:pass@host:port/db" <> metavar "DB_URL")
   <*> strOption    (long "user"  <> short 'u' <> help "(REQUIRED) github.com user name" <> metavar "GITHUB_USER")
   <*> strOption    (long "pass"  <> short 'p' <> help "(REQUIRED) github.com user password" <> metavar "GITHUB_PASS")
+  <*> switch       (long "github"  <> short 'g' <> help "Get only github repos info, skipping the hackage database")
 
 -- | User friendly version number
 prettyVersion :: String

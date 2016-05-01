@@ -13,10 +13,12 @@ main = do
   conOrError <- acquire dbConfig
   case conOrError of
     Left _ -> error "Error connecting"
-    Right c -> do
-      runEffect $ loopPackages c
-      runEffect $ loopDeps c
-      runEffect $ loopRepos conf c
+    Right c -> if onlyGh conf
+      then runEffect $ loopRepos conf c
+      else do
+        runEffect $ loopPackages c
+        runEffect $ loopDeps c
+        runEffect $ loopRepos conf c
 
 loopPackages :: Connection -> Effect IO ()
 loopPackages con = for (producePackages 0) (lift . insertPkgs con)
