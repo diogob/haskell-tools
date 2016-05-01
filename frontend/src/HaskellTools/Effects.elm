@@ -7,14 +7,14 @@ import Http
 import Task
 
 
-topReposUrl : String
-topReposUrl =
-  "http://localhost:3000/top_repos"
+packagesUrl : String
+packagesUrl =
+  "http://localhost:3000/packages"
 
 
-getTopRepos : Effects Action
-getTopRepos =
-  Http.get decodeModel topReposUrl
+getPackages : Effects Action
+getPackages =
+  Http.get decodeModel packagesUrl
     |> Task.toMaybe
-    |> Task.map NewRepos
+    |> Task.map NewPackages
     |> Effects.task

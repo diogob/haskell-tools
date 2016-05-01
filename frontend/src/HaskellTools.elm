@@ -1,7 +1,7 @@
 module HaskellTools (..) where
 
 import Effects exposing (Effects, Never)
-import HaskellTools.Effects exposing (getTopRepos)
+import HaskellTools.Effects exposing (getPackages)
 import HaskellTools.Model exposing (Model)
 import HaskellTools.Update exposing (update)
 import HaskellTools.View.App exposing (view)
@@ -12,7 +12,7 @@ import Task
 app : StartApp.App Model
 app =
   StartApp.start
-    { init = ( [], getTopRepos )
+    { init = ( [], getPackages )
     , update = update
     , view = view
     , inputs = []

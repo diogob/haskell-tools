@@ -2,7 +2,7 @@ module HaskellTools.View.App (..) where
 
 import HaskellTools.Action exposing (..)
 import HaskellTools.Model exposing (Model)
-import HaskellTools.Repo.View as Repo
+import HaskellTools.Package.View as Package
 import HaskellTools.View.Head as Head
 import Html exposing (Html, ol, div, main')
 import Html.Attributes exposing (class)
@@ -18,6 +18,6 @@ view address model =
         [ class "app-body" ]
         [ ol
             []
-            (List.map (Repo.view address) model)
+            (List.map (Package.view address) model)
         ]
     ]
