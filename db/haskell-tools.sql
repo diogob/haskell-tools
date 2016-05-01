@@ -1,7 +1,8 @@
 CREATE DATABASE haskell_tools;
 
 \c haskell_tools
-
+CREATE EXTENSION unaccent;
+CREATE EXTENSION pg_trgm;
 -- Private data structures
 
 CREATE TABLE public.packages (
@@ -128,6 +129,25 @@ FROM
   LEFT JOIN dependencies d ON (d.dependent = p.package_name)
 GROUP BY
   p.package_name, r.package_name;
+
+CREATE OR REPLACE FUNCTION api.package_search(query text)
+   RETURNS SETOF api.packages
+   LANGUAGE sql
+   STABLE
+  AS $function$
+  SELECT
+      p.*
+  FROM
+      api.packages p
+  WHERE
+      to_tsvector(p.description) @@ plainto_tsquery(unaccent(query))
+      OR
+      p.package_name % query
+  ORDER BY
+      ts_rank( setweight(to_tsvector(p.package_name), 'A') || setweight(to_tsvector(p.description), 'B')
+             , plainto_tsquery(unaccent(query))
+             ) DESC;
+  $function$;
 
 CREATE USER postgrest PASSWORD :password;
 CREATE ROLE anonymous;
