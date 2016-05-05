@@ -4,7 +4,7 @@ import HaskellTools.Action exposing (..)
 import HaskellTools.Model exposing (Model)
 import HaskellTools.Package.View as Package
 import HaskellTools.View.Head as Head
-import Html exposing (Html, ol, div, main')
+import Html exposing (Html, ul, div, main')
 import Html.Attributes exposing (class)
 import Signal
 
@@ -16,7 +16,7 @@ view address model =
     [ Head.view
     , main'
         [ class "app-body" ]
-        [ ol
+        [ ul
             []
             (List.map (Package.view address) model)
         ]
