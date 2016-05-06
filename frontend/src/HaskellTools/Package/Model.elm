@@ -1,12 +1,5 @@
 module HaskellTools.Package.Model (..) where
 
-import Date exposing (Date)
-
-type alias Dependency =
-  { package_name : String
-  , version_rage : String
-  }
-
 type alias Model =
   { package_name  : String
   , version       : String
@@ -21,7 +14,8 @@ type alias Model =
   , forks         : Int
   , collaborators : Int
   , extensions    : List String
-  , dependencies  : List Dependency
+  , dependencies  : List String
+  , dependents  : List String
   , created_at    : String
   , updated_at    : String
 }

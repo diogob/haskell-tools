@@ -8,12 +8,6 @@ import Json.Decode.Pipeline exposing (decode, required, optional)
 type alias Model =
   List Package.Model
 
-decodeDependency : Decoder Package.Dependency
-decodeDependency =
-  decode Package.Dependency
-    |> required "package_name" string
-    |> required "version_range" string
-
 decodeModel : Decoder Model
 decodeModel =
   decode Package.Model
@@ -30,7 +24,8 @@ decodeModel =
     |> required "forks" int
     |> required "collaborators" int
     |> required "extensions" (list string)
-    |> required "dependencies" (list decodeDependency)
+    |> required "dependencies" (list string)
+    |> required "dependents" (list string)
     |> required "created_at" string
     |> required "updated_at" string
     |> list

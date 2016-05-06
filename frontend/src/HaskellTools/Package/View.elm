@@ -28,6 +28,7 @@ view address model =
             [ text "Source code" ]
           ]
         , li [] [text ("Dependencies: " ++ (toString (List.length model.dependencies))) ]
+        , li [] [text ("Dependents: " ++ (toString (List.length model.dependents))) ]
         , li [] [text ("Stars: " ++ (toString model.stars))]
         , li [] [text ("Forks: " ++ (toString model.forks))]
         , li [] [text ("Collaborators: " ++ (toString model.collaborators))]

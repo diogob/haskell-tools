@@ -21,6 +21,7 @@ CREATE TABLE public.packages (
 
 CREATE TABLE public.repos (
   package_name text PRIMARY KEY REFERENCES packages,
+  repo_url text NOT NULL,
   stars integer NOT NULL DEFAULT 0,
   forks integer NOT NULL DEFAULT 0,
   collaborators integer NOT NULL DEFAULT 1,
@@ -114,10 +115,21 @@ SELECT
   r.stars,
   r.forks,
   r.collaborators,
-  coalesce(json_agg(DISTINCT e.extension) FILTER (WHERE e.extension IS NOT NULL), '[]') AS extensions,
-  coalesce(json_agg(
-    json_build_object('package_name', d.dependency, 'version_range', d.version_range)
-  ) FILTER (WHERE d.dependency IS NOT NULL), '[]') AS dependencies,
+  (
+    SELECT coalesce(json_agg(DISTINCT e.extension), '[]')
+    FROM extensions e
+    WHERE e.extension IS NOT NULL AND e.package_name = p.package_name
+  ) AS extensions,
+  (
+    SELECT coalesce(json_agg(d.dependency), '[]')
+    FROM dependencies d
+    WHERE d.dependency IS NOT NULL AND d.dependent = p.package_name
+  ) AS dependencies,
+  (
+    SELECT coalesce(json_agg(d.dependent), '[]')
+    FROM dependencies d
+    WHERE d.dependent IS NOT NULL AND d.dependency = p.package_name
+  ) AS dependents,
   -- when querying created at we usually want to know when it first got into our database
   LEAST(p.created_at, r.created_at) as created_at,
   -- when querying created at we usually want to know when it was last updated
@@ -125,8 +137,6 @@ SELECT
 FROM
   packages p
   JOIN repos r USING (package_name)
-  LEFT JOIN extensions e USING (package_name)
-  LEFT JOIN dependencies d ON (d.dependent = p.package_name)
 GROUP BY
   p.package_name, r.package_name;
 
