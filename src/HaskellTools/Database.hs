@@ -14,6 +14,9 @@ import Pasta ( selectFrom
              , (//)
              , showt
              , fromList
+             , BooleanExpression (..)
+             , setWhere
+             , columns
              )
 import qualified Hasql.Connection as H
 import qualified Hasql.Session as H
@@ -46,10 +49,10 @@ insertDeps = runInserts insertPackageWithDeps
 insertRepo :: Repo -> T.Text
 insertRepo r =
   showt $
-  insert "public.repos" columns values
+  insert "public.repos" cols values
   & onConflict .~ doUpdate "repos_pkey" ["stars" =.= ("EXCLUDED"//"stars"), "forks" =.= ("EXCLUDED"//"forks"), "collaborators" =.= ("EXCLUDED"//"collaborators")]
   where
-    columns = fromList ["package_name", "stars", "forks", "collaborators"]
+    cols = fromList ["package_name", "stars", "forks", "collaborators"]
     values = fromList [repoPackageName r, showt $ stars r, showt $ forks r, showt $ collaborators r]
 
 runInserts :: (a -> T.Text) -> H.Connection -> [a] -> IO ()
@@ -69,10 +72,10 @@ p2name = T.pack . display . pkgName . package
 insertPkg :: PackageDescription -> T.Text
 insertPkg p =
   showt $
-  insert "public.packages" columns values
+  insert "public.packages" cols values
   & onConflict .~ doUpdate "packages_pkey" ["version" =.= ("EXCLUDED"//"version")]
   where
-    columns = fromList ["package_name", "version", "license", "description", "category", "homepage", "package_url", "repo_type", "repo_location"]
+    cols = fromList ["package_name", "version", "license", "description", "category", "homepage", "package_url", "repo_type", "repo_location"]
     values = fromList [p2name p, p2version p, p2license p, p2desc p, p2cat p, p2homepage p, p2pkgUrl p, p2repoType, p2repoLocation]
     p2version = T.pack . display . pkgVersion . package
     p2license = T.pack . display . license
@@ -98,10 +101,10 @@ insertPackageWithDeps (pd, e, d) =
 insertDep :: PackageDescription -> Dependency -> T.Text
 insertDep p d =
   showt $
-  insert "public.dependencies" columns values
+  insert "public.dependencies" cols values
   & onConflict .~ doUpdate "dependencies_pkey" ["version_range" =.= ("EXCLUDED"//"version_range")]
   where
-    columns = fromList ["dependent", "dependency", "version_range"]
+    cols = fromList ["dependent", "dependency", "version_range"]
     values = fromList [p2name p, d2depdency d, d2version d]
     d2depdency (Dependency n _) = T.pack $ display n
     d2version  (Dependency _ v) = T.pack $ display v
@@ -109,10 +112,10 @@ insertDep p d =
 insertExt :: PackageDescription -> Extension -> T.Text
 insertExt p e =
   showt $
-  insert "public.extensions" columns values
+  insert "public.extensions" cols values
   & onConflict .~ doNothing
   where
-    columns = fromList ["package_name", "extension"]
+    cols = fromList ["package_name", "extension"]
     values = fromList [p2name p, e2extension e]
     e2extension = T.pack . display
 
@@ -127,4 +130,7 @@ decodePackageRepos =
 selectPackageRepos :: H.Query () PackageRepos
 selectPackageRepos =
   H.statement template HE.unit decodePackageRepos False
-    where template = T.encodeUtf8 $ showt $ selectFrom "package_repos"
+  where
+    template =
+      T.encodeUtf8 $ showt $ selectFrom "package_repos"
+      & setWhere (Not $ ("package_repos"//"package_name") `In` (selectFrom "repos" & columns .~ fromList ["package_name"]))

@@ -20,7 +20,7 @@ library
 
   other-modules:     Paths_haskell_tools
                    , HaskellTools.Types
-                   , HaskellTools.Config 
+                   , HaskellTools.Config
                    , HaskellTools.Hackage
                    , HaskellTools.Github
                    , HaskellTools.Database
