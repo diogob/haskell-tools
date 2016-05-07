@@ -1,18 +1,18 @@
 module HaskellTools (..) where
 
 import Effects exposing (Effects, Never)
-import HaskellTools.Effects exposing (getPackages)
-import HaskellTools.Model exposing (Model)
+import HaskellTools.Package.Effects exposing (getPackages)
+import HaskellTools.Model exposing (AppModel)
 import HaskellTools.Update exposing (update)
 import HaskellTools.View.App exposing (view)
 import Html exposing (Html)
 import StartApp
 import Task
 
-app : StartApp.App Model
+app : StartApp.App AppModel
 app =
   StartApp.start
-    { init = ( [], getPackages )
+    { init = ( {packages = [], errorMessage = ""}, getPackages )
     , update = update
     , view = view
     , inputs = []

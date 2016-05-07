@@ -1,7 +1,8 @@
 module HaskellTools.Action (..) where
 
-import HaskellTools.Model exposing (Model)
-
+import HaskellTools.Package.Action as Package
 
 type Action
-  = NewPackages (Maybe Model)
+  = PackageAction Package.Action
+  | NoOp
+  | ShowError String

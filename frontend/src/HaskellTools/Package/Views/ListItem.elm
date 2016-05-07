@@ -1,4 +1,4 @@
-module HaskellTools.Package.View (..) where
+module HaskellTools.Package.Views.ListItem (..) where
 
 import HaskellTools.Action exposing (..)
 import HaskellTools.Package.Model exposing (Model)
