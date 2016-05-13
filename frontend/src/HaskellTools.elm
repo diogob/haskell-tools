@@ -40,7 +40,6 @@ topBar =
 
 type Msg
   = PackageListMsg PL.Msg
-  | NoOp
   | ShowError String
 
 type alias Model =
@@ -51,8 +50,6 @@ type alias Model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update action model =
   case (Debug.log "action" action) of
-    NoOp ->
-      ( model, Cmd.none )
     ShowError msg ->
       ( model, Cmd.none )
     PackageListMsg subAction ->
