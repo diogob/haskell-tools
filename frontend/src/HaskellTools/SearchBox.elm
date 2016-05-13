@@ -1,12 +1,9 @@
-module HaskellTools.Package.Views.SearchBox (..) where
+module HaskellTools.SearchBox exposing (..)
 
 import Html exposing (Html, input, div)
 import Html.Attributes exposing (..)
-import Html.Events exposing (on, targetValue)
 
-import Signal
-
-view : Html
+view : Html msg
 view =
    div []
     [ input
