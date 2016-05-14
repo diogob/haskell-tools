@@ -1,10 +1,11 @@
 module HaskellTools exposing (..)
 
 import Html.App as App
-import HaskellTools.SearchBox as S
+import HaskellTools.Search as S
 import HaskellTools.PackageList as PL
 import Html exposing (Html, header, h1, img, text, div, ul)
 import Html.Attributes exposing (class, src, width)
+import Html.App as Html
 
 main : Program Never
 main =
@@ -15,14 +16,14 @@ main =
     , subscriptions = \_ -> Sub.none
     }
 
-view : Model -> Html msg
+view : Model -> Html Msg
 view model =
   div
     []
     [ topBar
     , Html.main'
         [ class "app-body" ]
-        [ S.view
+        [ Html.map SearchMsg S.view
         , PL.view model.packages
         ]
     ]
@@ -40,6 +41,7 @@ topBar =
 
 type Msg
   = PackageListMsg PL.Msg
+  | SearchMsg S.Msg
   | ShowError String
 
 type alias Model =
@@ -52,12 +54,12 @@ update action model =
   case (Debug.log "action" action) of
     ShowError msg ->
       ( model, Cmd.none )
+    SearchMsg (S.SearchPackages query) ->
+      PL.update (PL.SearchPackages query) model.packages
+        |> updatePackages model
     PackageListMsg subAction ->
-      let
-        ( updatedPackages, fx ) =
-          PL.update subAction model.packages
-      in
-        ( { model | packages = updatedPackages }, Cmd.map PackageListMsg fx )
+      PL.update subAction model.packages
+        |> updatePackages model
 
 init : ( Model, Cmd Msg )
 init =
@@ -65,3 +67,9 @@ init =
     (initialPackages, fx) = PL.init
   in
     ({packages = initialPackages, error = ""},  Cmd.map PackageListMsg fx)
+
+-- private functions
+
+updatePackages : Model -> (PL.Model, Cmd PL.Msg) -> (Model, Cmd Msg)
+updatePackages model (updatedPackages, fx) =
+  ( { model | packages = updatedPackages }, Cmd.map PackageListMsg fx )

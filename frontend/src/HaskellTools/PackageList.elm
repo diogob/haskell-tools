@@ -1,4 +1,4 @@
-module HaskellTools.PackageList exposing (Model, Msg, view, update, init)
+module HaskellTools.PackageList exposing (Model, Msg(..), view, update, init)
 
 import Html exposing (Html, ul, li, text, a, div, h4, p)
 import Html.Attributes exposing (href, target)
@@ -10,6 +10,7 @@ import Json.Decode.Extra exposing (..)
 
 type Msg
   = FetchPackages (Result Http.Error Model)
+  | SearchPackages String
 
 type alias Model = List Package
 
@@ -43,6 +44,8 @@ view model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update action model =
   case action of
+    SearchPackages query ->
+      ( model, getPackages )
     FetchPackages result ->
       case result of
         Ok pkgs ->
