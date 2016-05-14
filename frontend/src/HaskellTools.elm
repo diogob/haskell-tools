@@ -69,7 +69,6 @@ init =
     ({packages = initialPackages, error = ""},  Cmd.map PackageListMsg fx)
 
 -- private functions
-
 updatePackages : Model -> (PL.Model, Cmd PL.Msg) -> (Model, Cmd Msg)
 updatePackages model (updatedPackages, fx) =
   ( { model | packages = updatedPackages }, Cmd.map PackageListMsg fx )

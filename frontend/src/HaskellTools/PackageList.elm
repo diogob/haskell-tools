@@ -2,14 +2,16 @@ module HaskellTools.PackageList exposing (Model, Msg(..), view, update, init)
 
 import Html exposing (Html, ul, li, text, a, div, h4, p)
 import Html.Attributes exposing (href, target)
-import Http
 import Task
 
+import Json.Encode as Encode
 import Json.Decode exposing (Decoder, succeed, string, list, int, at, (:=))
 import Json.Decode.Extra exposing (..)
 
+import HttpBuilder exposing(..)
+
 type Msg
-  = FetchPackages (Result Http.Error Model)
+  = FetchPackages (Result String Model)
   | SearchPackages String
 
 type alias Model = List Package
@@ -45,7 +47,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update action model =
   case action of
     SearchPackages query ->
-      ( model, getPackages )
+      ( model, searchPackages query )
     FetchPackages result ->
       case result of
         Ok pkgs ->
@@ -57,13 +59,38 @@ init : (Model, Cmd Msg)
 init = ([], getPackages)
 
 -- private functions
+apiUrl : String -> String
+apiUrl = (++) "http://localhost:3000"
+
 packagesUrl : String
-packagesUrl =
-  "http://localhost:3000/packages"
+packagesUrl = apiUrl "/packages"
+
+searchUrl : String
+searchUrl = apiUrl "/rpc/package_search"
 
 getPackages : Cmd Msg
 getPackages =
-  Task.perform (FetchPackages << Err) (FetchPackages << Ok) (Http.get decodeModel packagesUrl)
+  get packagesUrl
+    |> (send (jsonReader decodeModel) stringReader)
+    |> Task.perform toError toOk
+
+searchPackages : String -> Cmd Msg
+searchPackages query =
+  let
+    body = Encode.object
+      [ ("query", Encode.string query) ]
+  in
+    post searchUrl
+      |> withHeaders [("Content-Type", "application/json"), ("Accept", "application/json")]
+      |> withJsonBody body
+      |> (send (jsonReader decodeModel) stringReader)
+      |> Task.perform toError toOk
+
+toError : a -> Msg
+toError _ = FetchPackages (Err "Err")
+
+toOk : Response Model -> Msg
+toOk r = FetchPackages (Ok r.data)
 
 decodeModel : Decoder Model
 decodeModel =
