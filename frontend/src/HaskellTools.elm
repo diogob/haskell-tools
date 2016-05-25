@@ -5,7 +5,6 @@ import HaskellTools.Search as S
 import HaskellTools.PackageList as PL
 import Html exposing (Html, header, h1, img, text, div, ul)
 import Html.Attributes exposing (class, src, width)
-import Html.App as Html
 
 main : Program Never
 main =
@@ -23,7 +22,7 @@ view model =
     [ topBar
     , Html.main'
         [ class "app-body" ]
-        [ Html.map SearchMsg S.view
+        [ App.map SearchMsg S.view
         , PL.view model.packages
         ]
     ]
