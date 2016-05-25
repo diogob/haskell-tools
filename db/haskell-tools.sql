@@ -159,8 +159,48 @@ CREATE OR REPLACE FUNCTION api.package_search(query text)
              ) DESC;
   $function$;
 
+CREATE OR REPLACE VIEW api.extensions AS
+SELECT
+  extension,
+  count(distinct package_name) AS packages
+FROM
+  extensions
+GROUP BY
+  extension;
+
+CREATE MATERIALIZED VIEW api.dependency_tree AS
+WITH RECURSIVE dependency_tree AS (
+  SELECT package_name, package_name as parent, 1 as deps FROM api.packages
+  UNION
+  SELECT t.package_name, d.dependency as parent, 1 as deps FROM public.dependencies d JOIN dependency_tree t ON d.dependent = t.parent
+),
+dependent_tree AS (
+  SELECT package_name, package_name as parent, 0 as deps FROM api.packages
+  UNION
+  SELECT t.package_name, d.dependent as parent, 1 as deps FROM public.dependencies d JOIN dependent_tree t ON d.dependency = t.parent
+),
+totals AS (
+  SELECT package_name, ty.sum as all_dependencies, tt.sum as all_dependents
+  FROM
+  (SELECT package_name, sum(deps) FROM dependency_tree GROUP BY package_name) ty
+  JOIN
+  (SELECT package_name, sum(deps) FROM dependent_tree GROUP BY package_name) tt
+  USING (package_name)
+)
+SELECT
+  p.package_name,
+  p.stars,
+  p.forks,
+  p.collaborators,
+  all_dependencies,
+  all_dependents,
+  all_dependents / all_dependencies::numeric as ratio
+FROM
+  totals JOIN api.packages p USING (package_name);
+
 CREATE USER postgrest PASSWORD :password;
 CREATE ROLE anonymous;
 GRANT anonymous TO postgrest;
 GRANT USAGE ON SCHEMA api TO anonymous;
-GRANT SELECT ON api.packages TO anonymous;
+GRANT EXECUTE ON FUNCTION api.package_search(text) TO anonymous;
+GRANT SELECT ON ALL TABLES IN SCHEMA api TO anonymous;
