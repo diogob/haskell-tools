@@ -21,7 +21,6 @@ CREATE TABLE public.packages (
 
 CREATE TABLE public.repos (
   package_name text PRIMARY KEY REFERENCES packages,
-  repo_url text NOT NULL,
   stars integer NOT NULL DEFAULT 0,
   forks integer NOT NULL DEFAULT 0,
   collaborators integer NOT NULL DEFAULT 1,
