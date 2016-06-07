@@ -1,0 +1,18 @@
+/**
+ * Color palete:
+ *  Dark Purple: #2C1E37
+ *  Light purple: #7B14CC
+ *  Atention Orange: #FF9F00
+ *  Weird Green: #19FF74
+ *  Neutral gray: #847151
+ */
+
+.app-body {
+    padding: 2rem;
+}
+
+.top-bar {
+    padding: 0.5rem;
+    background-color: #2C1E37;
+    color: white;
+}

@@ -33,8 +33,9 @@ topBar =
     [ class "top-bar" ]
     [ h1
         []
-        [ img [ src "assets/img/Haskell-Logo.svg", width 100 ] []
-        , text "HaskellTools"
+        [ img [ src "assets/img/Haskell-Logo.svg", width 50 ] []
+        , text " "
+        , text "Haskell Tools"
         ]
     ]
 
