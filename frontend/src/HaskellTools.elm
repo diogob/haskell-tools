@@ -2,6 +2,7 @@ module HaskellTools exposing (..)
 
 import Html.App as App
 import HaskellTools.Search as S
+import HaskellTools.Stats as ST
 import HaskellTools.PackageList as PL
 import Html exposing (Html, header, h1, img, text, div, ul)
 import Html.Attributes exposing (class, src, width)
@@ -23,7 +24,9 @@ view model =
     , Html.main'
         [ class "app-body" ]
         [ App.map SearchMsg S.view
-        , PL.view model.packages
+        , if List.length model.packages > 0
+            then PL.view model.packages
+            else ST.view {totalPackages = 1}
         ]
     ]
 
