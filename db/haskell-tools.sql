@@ -131,7 +131,7 @@ SELECT
   ) AS dependents,
   -- when querying created at we usually want to know when it first got into our database
   LEAST(p.created_at, r.created_at) as created_at,
-  -- when querying created at we usually want to know when it was last updated
+  -- when querying updated at we usually want to know when it was last updated
   GREATEST(p.updated_at, r.updated_at) as updated_at
 FROM
   packages p
