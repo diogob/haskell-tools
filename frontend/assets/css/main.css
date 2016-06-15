@@ -16,3 +16,21 @@
     background-color: #2C1E37;
     color: white;
 }
+
+a {
+    color: #7B14CC;
+    text-decoration: none;
+}
+
+a:visited {
+    color: #847151;
+}
+
+a:hover,
+a:focus {
+    text-decoration: underline
+}
+
+ul {
+    list-style-type: none;
+}
