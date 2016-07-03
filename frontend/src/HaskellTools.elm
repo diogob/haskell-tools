@@ -26,7 +26,7 @@ view model =
         [ App.map SearchMsg S.view
         , if List.length model.packages > 0
             then PL.view model.packages
-            else ST.view {totalPackages = 1}
+            else ST.view model.stats
         ]
     ]
 
@@ -46,10 +46,12 @@ type Msg
   = PackageListMsg PL.Msg
   | SearchMsg S.Msg
   | ShowError String
+  | StatsMsg ST.Msg
 
 type alias Model =
   { packages : PL.Model
   , error : String
+  , stats : ST.Model
   }
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -63,15 +65,22 @@ update action model =
     PackageListMsg subAction ->
       PL.update subAction model.packages
         |> updatePackages model
+    StatsMsg subAction ->
+      ST.update subAction model.stats
+        |> updateStats model
 
 init : ( Model, Cmd Msg )
 init =
   let
-    (initialPackages, fx) = PL.init
+    (stats, fx) = ST.init
   in
-    ({packages = initialPackages, error = ""},  Cmd.map PackageListMsg fx)
+    ({packages = [], error = "", stats = stats},  Cmd.map StatsMsg fx)
 
 -- private functions
 updatePackages : Model -> (PL.Model, Cmd PL.Msg) -> (Model, Cmd Msg)
 updatePackages model (updatedPackages, fx) =
   ( { model | packages = updatedPackages }, Cmd.map PackageListMsg fx )
+
+updateStats : Model -> (ST.Model, Cmd ST.Msg) -> (Model, Cmd Msg)
+updateStats model (updatedStats, fx) =
+  ( { model | stats = updatedStats }, Cmd.map StatsMsg fx )

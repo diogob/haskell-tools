@@ -131,6 +131,9 @@ selectPackageRepos :: H.Query () PackageRepos
 selectPackageRepos =
   H.statement template HE.unit decodePackageRepos False
   where
+    -- @TODO: we should change this to an UPDATE so we can record the last time we tried to fetch a repo
     template =
       T.encodeUtf8 $ showt $ selectFrom "package_repos"
-      & setWhere (Not $ ("package_repos"//"package_name") `In` (selectFrom "repos" & columns .~ fromList ["package_name"]))
+      & setWhere (Not $ ("package_repos"//"package_name") `In` (selectFrom "repos" & olderThanAWeek & columns .~ fromList ["package_name"]))
+    olderThanAWeek = setWhere 
+    gt = Operator ">"
