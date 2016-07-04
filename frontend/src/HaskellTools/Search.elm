@@ -9,7 +9,7 @@ type Msg =
 
 view : Html Msg
 view =
-   div []
+   div [ class "full" ]
     [ input
         [ placeholder "Search package"
         , onInput SearchPackages

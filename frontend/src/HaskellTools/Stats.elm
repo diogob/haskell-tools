@@ -19,16 +19,18 @@ type alias Model =
 
 view : Model -> Html msg
 view model =
-    table [ class "primary" ]
-        [ thead []
-              [ tr []
-                    [ th []
-                          [ text "Extension" ]
-                    , th []
-                        [ text "Packages" ]
+    div []
+        [ table [ class "primary full" ]
+              [ thead []
+                    [ tr []
+                          [ th []
+                                [ text "Extension used in default-extensions" ]
+                          , th []
+                              [ text "Packages" ]
+                          ]
                     ]
+              , tbody [] (List.map extensionTR model.extensions)
               ]
-        , tbody [] (List.map extensionTR model.extensions)
         ]
 
 init : (Model, Cmd Msg)
