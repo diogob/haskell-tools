@@ -6,18 +6,28 @@ module HaskellTools.Database
     ) where
 
 import Pasta ( selectFrom
+             , selectFilter
              , insert
              , doUpdate
              , doNothing
              , onConflict
-             , (=.=)
+             , (.|)
+             , (.=)
              , (//)
              , showt
              , fromList
              , BooleanExpression (..)
-             , setWhere
              , columns
+             , update
+             , updateFilter
+             , updateReturning
+             , now
+             , age
+             , gte
              )
+
+import Debug.Trace
+
 import qualified Hasql.Connection as H
 import qualified Hasql.Session as H
 import qualified Hasql.Query as H
@@ -30,7 +40,7 @@ import Data.Monoid ((<>))
 import HaskellTools.Hackage
 import HaskellTools.Types
 import Data.Maybe (fromMaybe)
-import Control.Lens
+import Control.Lens hiding ((.=))
 import Distribution.PackageDescription
 import Distribution.Package
 import Distribution.Text
@@ -50,7 +60,7 @@ insertRepo :: Repo -> T.Text
 insertRepo r =
   showt $
   insert "public.repos" cols values
-  & onConflict .~ doUpdate "repos_pkey" ["stars" =.= ("EXCLUDED"//"stars"), "forks" =.= ("EXCLUDED"//"forks"), "collaborators" =.= ("EXCLUDED"//"collaborators")]
+  & onConflict .~ doUpdate "repos_pkey" ["stars" .= ("EXCLUDED"//"stars"), "forks" .= ("EXCLUDED"//"forks"), "collaborators" .= ("EXCLUDED"//"collaborators")]
   where
     cols = fromList ["package_name", "stars", "forks", "collaborators"]
     values = fromList [repoPackageName r, showt $ stars r, showt $ forks r, showt $ collaborators r]
@@ -73,7 +83,7 @@ insertPkg :: PackageDescription -> T.Text
 insertPkg p =
   showt $
   insert "public.packages" cols values
-  & onConflict .~ doUpdate "packages_pkey" ["version" =.= ("EXCLUDED"//"version")]
+  & onConflict .~ doUpdate "packages_pkey" ["version" .= ("EXCLUDED"//"version")]
   where
     cols = fromList ["package_name", "version", "license", "description", "category", "homepage", "package_url", "repo_type", "repo_location"]
     values = fromList [p2name p, p2version p, p2license p, p2desc p, p2cat p, p2homepage p, p2pkgUrl p, p2repoType, p2repoLocation]
@@ -102,7 +112,7 @@ insertDep :: PackageDescription -> Dependency -> T.Text
 insertDep p d =
   showt $
   insert "public.dependencies" cols values
-  & onConflict .~ doUpdate "dependencies_pkey" ["version_range" =.= ("EXCLUDED"//"version_range")]
+  & onConflict .~ doUpdate "dependencies_pkey" ["version_range" .= ("EXCLUDED"//"version_range")]
   where
     cols = fromList ["dependent", "dependency", "version_range"]
     values = fromList [p2name p, d2depdency d, d2version d]
@@ -129,11 +139,15 @@ decodePackageRepos =
 
 selectPackageRepos :: H.Query () PackageRepos
 selectPackageRepos =
-  H.statement template HE.unit decodePackageRepos False
+  H.statement (trace (show template) template) HE.unit decodePackageRepos False
   where
     -- @TODO: we should change this to an UPDATE so we can record the last time we tried to fetch a repo
     template =
-      T.encodeUtf8 $ showt $ selectFrom "package_repos"
-      & setWhere (Not $ ("package_repos"//"package_name") `In` (selectFrom "repos" & olderThanAWeek & columns .~ fromList ["package_name"]))
-    olderThanAWeek = setWhere 
-    gt = Operator ">"
+      T.encodeUtf8 $ showt $ update "package_repos" (fromList ["updated_at"]) (fromList [now])
+      & updateFilter .~ (("package_repos"//"package_name") `In` ( selectFrom "repos"
+                                                                & columns .~ fromList ["package_name"]
+                                                                & selectFilter .~ age ("repos"//"updated_at") `gte` ("2 days" :: T.Text)
+                                                                )
+                        .| (age ("package_repos"//"updated_at") `gte` ("1 week" :: T.Text))
+                        )
+      & updateReturning .~ ["*"]
