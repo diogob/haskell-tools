@@ -40,18 +40,20 @@ produceRepos :: AppConfig -> PackageRepos -> Int -> Producer [Repo] IO ()
 produceRepos conf pkgs page = do
   repos <- lift ioRepos
   unless (V.null repos) $ do
-    lift $ threadDelay 1000000
+    lift $ threadDelay 1500000
     yield $ catMaybes $ V.toList repos
     produceRepos conf pkgs $ page + 1
   where
     opts = defaults & auth ?~ basicAuth (BS.pack $ ghUser conf) (BS.pack $ ghPass conf)
     ioRepos = V.mapM (\(pn, o, r) -> mkRepo opts pn o r) batch
     batch = pageSlice pkgs
-    lower = page * pageSize
-    upper
-      | (V.length pkgs - lower) >= pageSize = lower + pageSize
-      | (V.length pkgs - lower) < pageSize = V.length pkgs - lower
-    pageSlice = V.slice lower upper
+    lower
+      | V.length pkgs < (page * pageSize) = V.length pkgs
+      | otherwise = page * pageSize
+    len
+      | V.length pkgs - lower > pageSize = pageSize
+      | otherwise = V.length pkgs - lower
+    pageSlice = V.slice lower len
     pageSize = 10
 
 baseUrl :: String
