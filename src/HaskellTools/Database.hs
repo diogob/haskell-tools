@@ -26,8 +26,6 @@ import Pasta ( selectFrom
              , gte
              )
 
-import Debug.Trace
-
 import qualified Hasql.Connection as H
 import qualified Hasql.Session as H
 import qualified Hasql.Query as H
@@ -139,15 +137,15 @@ decodePackageRepos =
 
 selectPackageRepos :: H.Query () PackageRepos
 selectPackageRepos =
-  H.statement (trace (show template) template) HE.unit decodePackageRepos False
+  H.statement template HE.unit decodePackageRepos False
   where
     -- @TODO: we should change this to an UPDATE so we can record the last time we tried to fetch a repo
     template =
       T.encodeUtf8 $ showt $ update "package_repos" (fromList ["updated_at"]) (fromList [now])
       & updateFilter .~ (("package_repos"//"package_name") `In` ( selectFrom "repos"
                                                                 & columns .~ fromList ["package_name"]
-                                                                & selectFilter .~ age ("repos"//"updated_at") `gte` ("2 days" :: T.Text)
+                                                                & selectFilter .~ age ("repos"//"updated_at") `gte` ("1 day" :: T.Text)
                                                                 )
-                        .| (age ("package_repos"//"updated_at") `gte` ("1 week" :: T.Text))
+                        .| (age ("package_repos"//"updated_at") `gte` ("2 days" :: T.Text))
                         )
       & updateReturning .~ ["*"]
