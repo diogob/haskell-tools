@@ -76,16 +76,34 @@ BEFORE UPDATE ON public.repos
 FOR EACH ROW
 EXECUTE PROCEDURE update_updated_at();
 
-CREATE VIEW public.package_repos AS
+CREATE OR REPLACE VIEW public.package_repos AS
 SELECT
   p.package_name,
   r[1] as owner,
-  r[2] as repo
+  r[2] as repo,
+  p.updated_at
 FROM
   packages p,
-  regexp_matches(repo_location, 'github.com[:\/]([^\/]*)\/([^\. ]*)') r
+  regexp_matches(repo_location, 'github.com[:\/]([^\/]*)\/([^\. /]*)') r
 WHERE
   repo_location ~* 'github';
+
+-- Trigger to delegate update to packages
+CREATE FUNCTION public.update_package_updated_at()
+RETURNS TRIGGER
+LANGUAGE 'plpgsql'
+AS $$
+BEGIN
+  UPDATE packages SET updated_at = NEW.updated_at WHERE package_name = NEW.package_name;
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER update_package_updated_at
+INSTEAD OF UPDATE ON public.package_repos
+FOR EACH ROW
+EXECUTE PROCEDURE update_package_updated_at();
+
 
 CREATE OR REPLACE VIEW public.categories AS
 SELECT
