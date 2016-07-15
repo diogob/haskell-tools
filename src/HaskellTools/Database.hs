@@ -6,7 +6,7 @@ module HaskellTools.Database
     ) where
 
 import Pasta ( selectFrom
-             , selectFilter
+             , conditions
              , insert
              , doUpdate
              , doNothing
@@ -14,13 +14,12 @@ import Pasta ( selectFrom
              , (.|)
              , (.=)
              , (//)
-             , showt
+             , toSQL
              , fromList
              , BooleanExpression (..)
              , columns
              , update
-             , updateFilter
-             , updateReturning
+             , returning
              , now
              , age
              , gte
@@ -43,6 +42,7 @@ import Distribution.PackageDescription
 import Distribution.Package
 import Distribution.Text
 import Language.Haskell.Extension
+import Data.String.Conversions
 
 
 insertRepos :: H.Connection -> [Repo] -> IO ()
@@ -54,9 +54,12 @@ insertPkgs = runInserts insertPkg
 insertDeps :: H.Connection -> [PackageWithDeps] -> IO ()
 insertDeps = runInserts insertPackageWithDeps
 
+showt :: Show a => a -> T.Text
+showt = cs . show
+
 insertRepo :: Repo -> T.Text
 insertRepo r =
-  showt $
+  toSQL $
   insert "public.repos" cols values
   & onConflict .~ doUpdate "repos_pkey" ["stars" .= ("EXCLUDED"//"stars"), "forks" .= ("EXCLUDED"//"forks"), "collaborators" .= ("EXCLUDED"//"collaborators")]
   where
@@ -79,7 +82,7 @@ p2name = T.pack . display . pkgName . package
 
 insertPkg :: PackageDescription -> T.Text
 insertPkg p =
-  showt $
+  toSQL $
   insert "public.packages" cols values
   & onConflict .~ doUpdate "packages_pkey" ["version" .= ("EXCLUDED"//"version")]
   where
@@ -108,7 +111,7 @@ insertPackageWithDeps (pd, e, d) =
 
 insertDep :: PackageDescription -> Dependency -> T.Text
 insertDep p d =
-  showt $
+  toSQL $
   insert "public.dependencies" cols values
   & onConflict .~ doUpdate "dependencies_pkey" ["version_range" .= ("EXCLUDED"//"version_range")]
   where
@@ -119,7 +122,7 @@ insertDep p d =
 
 insertExt :: PackageDescription -> Extension -> T.Text
 insertExt p e =
-  showt $
+  toSQL $
   insert "public.extensions" cols values
   & onConflict .~ doNothing
   where
@@ -141,11 +144,11 @@ selectPackageRepos =
   where
     -- @TODO: we should change this to an UPDATE so we can record the last time we tried to fetch a repo
     template =
-      T.encodeUtf8 $ showt $ update "package_repos" (fromList ["updated_at"]) (fromList [now])
-      & updateFilter .~ (("package_repos"//"package_name") `In` ( selectFrom "repos"
+      T.encodeUtf8 $ toSQL $ update "package_repos" (fromList ["updated_at"]) (fromList [now])
+      & conditions .~ (("package_repos"//"package_name") `In` ( selectFrom "repos"
                                                                 & columns .~ fromList ["package_name"]
-                                                                & selectFilter .~ age ("repos"//"updated_at") `gte` ("1 day" :: T.Text)
+                                                                & conditions .~ age ("repos"//"updated_at") `gte` ("1 day" :: T.Text)
                                                                 )
                         .| (age ("package_repos"//"updated_at") `gte` ("2 days" :: T.Text))
                         )
-      & updateReturning .~ ["*"]
+      & returning .~ ["*"]
