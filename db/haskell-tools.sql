@@ -116,7 +116,7 @@ FROM
 WHERE
   btrim(c.c) <> ''::text;
 
-CREATE MATERIALIZED VIEW private.dependency_tree AS
+CREATE MATERIALIZED VIEW private.dependency_totals AS
 WITH RECURSIVE dependency_tree AS (
   SELECT package_name, package_name as parent, 1 as deps FROM public.packages
   UNION
@@ -136,16 +136,15 @@ totals AS (
   USING (package_name)
 )
 SELECT
-  p.package_name,
-  p.stars,
-  p.forks,
-  p.collaborators,
+  package_name,
   all_dependencies,
   all_dependents,
   all_dependents / all_dependencies::numeric as ratio
 FROM
-  totals JOIN public.packages p USING (package_name);
+  totals;
 
+CREATE INDEX ON private.dependency_totals (package_name) WHERE ratio > 1;
+CREATE INDEX ON private.dependency_totals (package_name) WHERE ratio < 1;
 
 -- API exposed through PostgREST
 CREATE OR REPLACE VIEW public.packages AS
