@@ -56,9 +56,9 @@ viewExtensions extensions =
         [ thead []
               [ tr []
                     [ th []
-                          [ text "Extension used in cabal files" ]
+                          [ text "Extensions used in cabal files" ]
                     , th []
-                        [ text "Packages" ]
+                        [ text "# of packages" ]
                     ]
               ]
         , tbody [] (List.map extensionTR extensions)
