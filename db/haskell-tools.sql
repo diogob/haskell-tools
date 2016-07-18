@@ -1,9 +1,12 @@
 CREATE DATABASE haskell_tools;
 
 \c haskell_tools
+CREATE SCHEMA private;
+SET search_path TO private, public;
+ALTER DATABASE haskell_tools SET search_path TO public, private;
+
 CREATE EXTENSION unaccent;
 CREATE EXTENSION pg_trgm;
-CREATE SCHEMA private;
 -- Private data structures
 
 CREATE TABLE private.packages (
@@ -196,7 +199,7 @@ CREATE OR REPLACE FUNCTION public.package_search(query text)
   FROM
       public.packages p
   WHERE
-      to_tsvector(p.description) @@ plainto_tsquery(unaccent(query))
+      private.to_tsvector(p.description) @@ plainto_tsquery(private.unaccent(query))
       OR
       p.package_name % query
   ORDER BY
