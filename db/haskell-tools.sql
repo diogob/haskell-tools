@@ -119,14 +119,14 @@ FROM
 WHERE
   btrim(c.c) <> ''::text;
 
-CREATE MATERIALIZED VIEW private.dependency_totals AS
+CREATE MATERIALIZED VIEW private.package_totals AS
 WITH RECURSIVE dependency_tree AS (
-  SELECT package_name, package_name as parent, 1 as deps FROM public.packages
+  SELECT package_name, package_name as parent, 1 as deps FROM private.packages
   UNION
   SELECT t.package_name, d.dependency as parent, 1 as deps FROM private.dependencies d JOIN dependency_tree t ON d.dependent = t.parent
 ),
 dependent_tree AS (
-  SELECT package_name, package_name as parent, 0 as deps FROM public.packages
+  SELECT package_name, package_name as parent, 0 as deps FROM private.packages
   UNION
   SELECT t.package_name, d.dependent as parent, 1 as deps FROM private.dependencies d JOIN dependent_tree t ON d.dependency = t.parent
 ),
@@ -140,14 +140,30 @@ totals AS (
 )
 SELECT
   package_name,
+  (
+  SELECT coalesce(json_agg(DISTINCT e.extension), '[]')
+  FROM private.extensions e
+  WHERE e.extension IS NOT NULL AND e.package_name = t.package_name
+  ) AS extensions,
+  (
+  SELECT coalesce(json_agg(d.dependency), '[]')
+  FROM private.dependencies d
+  WHERE d.dependency IS NOT NULL AND d.dependent = t.package_name
+  ) AS dependencies,
+  (
+  SELECT coalesce(json_agg(d.dependent), '[]')
+  FROM private.dependencies d
+  WHERE d.dependent IS NOT NULL AND d.dependency = t.package_name
+  ) AS dependents,
   all_dependencies,
   all_dependents,
   all_dependents / all_dependencies::numeric as ratio
 FROM
-  totals;
+  totals t;
 
-CREATE INDEX ON private.dependency_totals (package_name) WHERE ratio > 1;
-CREATE INDEX ON private.dependency_totals (package_name) WHERE ratio < 1;
+CREATE INDEX ON private.package_totals (package_name);
+CREATE INDEX ON private.package_totals (package_name) WHERE ratio > 1;
+CREATE INDEX ON private.package_totals (package_name) WHERE ratio < 1;
 
 -- API exposed through PostgREST
 CREATE OR REPLACE VIEW public.packages AS
@@ -164,21 +180,9 @@ SELECT
   r.stars,
   r.forks,
   r.collaborators,
-  (
-    SELECT coalesce(json_agg(DISTINCT e.extension), '[]')
-    FROM private.extensions e
-    WHERE e.extension IS NOT NULL AND e.package_name = p.package_name
-  ) AS extensions,
-  (
-    SELECT coalesce(json_agg(d.dependency), '[]')
-    FROM private.dependencies d
-    WHERE d.dependency IS NOT NULL AND d.dependent = p.package_name
-  ) AS dependencies,
-  (
-    SELECT coalesce(json_agg(d.dependent), '[]')
-    FROM private.dependencies d
-    WHERE d.dependent IS NOT NULL AND d.dependency = p.package_name
-  ) AS dependents,
+  t.extensions,
+  t.dependencies,
+  t.dependents,
   -- when querying created at we usually want to know when it first got into our database
   LEAST(p.created_at, r.created_at) as created_at,
   -- when querying updated at we usually want to know when it was last updated
@@ -186,8 +190,7 @@ SELECT
 FROM
   private.packages p
   JOIN private.repos r USING (package_name)
-GROUP BY
-  p.package_name, r.package_name;
+  JOIN private.package_totals t USING (package_name);
 
 CREATE OR REPLACE FUNCTION public.package_search(query text)
    RETURNS SETOF public.packages
