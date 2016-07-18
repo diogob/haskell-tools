@@ -17,27 +17,7 @@ type Msg
   = FetchPackages (Result String Model)
   | SearchPackages String
 
-type alias Model = List Package
-
-type alias Package =
-  { package_name  : String
-  , version       : String
-  , license       : String
-  , description   : String
-  , category      : String
-  , homepage      : String
-  , package_url   : String
-  , repo_type     : String
-  , repo_location : String
-  , stars         : Int
-  , forks         : Int
-  , collaborators : Int
-  , extensions    : List String
-  , dependencies  : List String
-  , dependents  : List String
-  , created_at    : String
-  , updated_at    : String
-}
+type alias Model = Packages
 
 view : Model -> Html msg
 view model =
@@ -84,6 +64,7 @@ searchPackages query =
     in
         post searchUrl
             |> withHeaders [("Content-Type", "application/json"), ("Accept", "application/json")]
+            |> withHeader "Range" "0-99"
             |> withJsonBody body
             |> (send (jsonReader decodeModel) stringReader)
             |> Task.perform toError toOk

@@ -15,26 +15,25 @@ import HaskellTools.Api exposing (..)
 type alias Model =
   { totalPackages : Int
   , extensions : Extensions
+  , topLibraries : List String
+  , topEndUser : List String
   }
 
 view : Model -> Html msg
 view model =
     div []
-        [ table [ class "primary full" ]
-              [ thead []
-                    [ tr []
-                          [ th []
-                                [ text "Extension used in default-extensions" ]
-                          , th []
-                              [ text "Packages" ]
-                          ]
-                    ]
-              , tbody [] (List.map extensionTR model.extensions)
-              ]
+        [ viewExtensions model.extensions
         ]
 
 init : (Model, Cmd Msg)
-init = ({totalPackages = 0, extensions = []}, getExtensions)
+init = (
+         { totalPackages = 0
+         , extensions = []
+         , topLibraries = []
+         , topEndUser = []
+         }
+       , getExtensions
+       )
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update action model =
@@ -50,6 +49,21 @@ type Msg
   = FetchExtensions (Result String Extensions)
 
 -- private
+
+viewExtensions : Extensions -> Html msg
+viewExtensions extensions =
+    table [ class "primary full" ]
+        [ thead []
+              [ tr []
+                    [ th []
+                          [ text "Extension used in cabal files" ]
+                    , th []
+                        [ text "Packages" ]
+                    ]
+              ]
+        , tbody [] (List.map extensionTR extensions)
+        ]
+
 type alias Extension =
     { extension : String
     , packages : Int
