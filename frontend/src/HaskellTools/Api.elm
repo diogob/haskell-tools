@@ -1,8 +1,15 @@
 module HaskellTools.Api exposing (apiUrl
-                                 , Packages
                                  , Package
+                                 , Packages
+                                 , Extension
+                                 , Extensions
                                  , ApiMsg (..)
                                  , searchPackages
+                                 , getExtensions
+                                 , getPackages
+                                 , getTopLibraries
+                                 , getTopApps
+                                 , getMostUsed
                                  )
 
 import HttpBuilder exposing(..)
@@ -11,10 +18,12 @@ import Json.Encode as Encode
 import Json.Decode exposing (Decoder, succeed, string, list, int, at, (:=))
 import Json.Decode.Extra exposing (..)
 
-type alias Packages = List Package
+type alias Extension =
+    { extension : String
+    , packages : Int
+    }
 
-type ApiMsg
-  = FetchPackages (Result String Packages)
+type alias Extensions = List Extension
 
 type alias Package =
   { package_name  : String
@@ -36,20 +45,51 @@ type alias Package =
   , updated_at    : String
 }
 
+type alias Packages = List Package
+
+type ApiMsg
+  = FetchPackages Packages
+  | FetchTopLibraries Packages
+  | FetchTopApps Packages
+  | FetchMostUsed Packages
+  | FetchExtensions Extensions
+  | Error String
+
 apiUrl : String -> String
 apiUrl = (++) "http://localhost:3000"
 
 packagesUrl : String
 packagesUrl = apiUrl "/packages"
 
+extensionsUrl : String
+extensionsUrl = apiUrl "/extensions?order=packages.desc"
+
 searchUrl : String
 searchUrl = apiUrl "/rpc/package_search"
 
-getPackages : Cmd ApiMsg
-getPackages =
-  get packagesUrl
-    |> (send (jsonReader decodeModel) stringReader)
-    |> Task.perform toError toOk
+getExtensions : Cmd ApiMsg
+getExtensions =
+  get extensionsUrl
+    |> withHeader "Range" "0-10"
+    |> (send (jsonReader decodeExtensions) stringReader)
+    |> Task.perform toError (FetchExtensions << .data)
+
+getPackages : List (String, String) -> (Packages -> ApiMsg) -> Cmd ApiMsg
+getPackages query toPackages =
+    url packagesUrl query
+        |> get
+        |> withHeader "Range" "0-9"
+        |> (send (jsonReader decodePackages) stringReader)
+        |> Task.perform toError (toPackages << .data)
+
+getTopLibraries : Cmd ApiMsg
+getTopLibraries = getPackages [("ratio", "gt.1"), ("order", "stars.desc")] FetchTopLibraries
+
+getTopApps : Cmd ApiMsg
+getTopApps = getPackages [("ratio", "lte.1"), ("order", "stars.desc")] FetchTopApps
+
+getMostUsed : Cmd ApiMsg
+getMostUsed = getPackages [("order", "all_dependents.desc")] FetchMostUsed
 
 searchPackages : String -> Cmd ApiMsg
 searchPackages query =
@@ -61,17 +101,17 @@ searchPackages query =
             |> withHeaders [("Content-Type", "application/json"), ("Accept", "application/json")]
             |> withHeader "Range" "0-99"
             |> withJsonBody body
-            |> (send (jsonReader decodeModel) stringReader)
-            |> Task.perform toError toOk
+            |> (send (jsonReader decodePackages) stringReader)
+            |> Task.perform toError toPackages
 
 toError : a -> ApiMsg
-toError _ = FetchPackages (Err "Err")
+toError _ = Error "API Error"
 
-toOk : Response Packages -> ApiMsg
-toOk r = FetchPackages (Ok r.data)
+toPackages : Response Packages -> ApiMsg
+toPackages = FetchPackages << .data
 
-decodeModel : Decoder Packages
-decodeModel =
+decodePackages : Decoder Packages
+decodePackages =
   list (
     succeed Package
       |: ("package_name" := string)
@@ -92,3 +132,12 @@ decodeModel =
       |: ("created_at" := string)
       |: ("updated_at" := string)
   )
+
+decodeExtensions : Decoder Extensions
+decodeExtensions =
+  list (
+    succeed Extension
+      |: ("extension" := string)
+      |: ("packages" := int)
+  )
+
