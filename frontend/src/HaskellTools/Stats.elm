@@ -15,10 +15,11 @@ type alias Model =
 
 view : Model -> Html msg
 view model =
-    div [ class "flex" ]
+    div [ class "flex one two-1000" ]
         [ div [] [viewExtensions model.extensions]
         , div [] [viewTopLibraries model.topLibraries]
         , div [] [viewTopApps model.topApps]
+        , div [] [viewMostUsed model.mostUsed]
         ]
 
 init : (Model, Cmd Msg)
@@ -41,6 +42,8 @@ update action model =
             ( {model | topLibraries = result}, Cmd.none )
         FetchTopApps result ->
             ( {model | topApps = result}, Cmd.none )
+        FetchMostUsed result ->
+            ( {model | mostUsed = result}, Cmd.none )
         -- the catch all bellow is for api calls that are not relevant for the stats module
         _ ->
               ( model, Cmd.none )
@@ -66,7 +69,7 @@ viewExtensions extensions =
                 ]
     in
         table [ class "primary full" ]
-            [ header ["Extensions used in cabal files", "Packages"]
+            [ header ["Most used extensions in cabal files", "Packages"]
             , tbody [] (List.map extensionTR extensions)
             ]
 
@@ -81,6 +84,12 @@ viewTopApps = viewPackages [ ("Top Apps", .package_name)
                            , ("Dependencies (including transient)", (.all_dependencies >> toString))
                            , ("Stars", (.stars >> toString))
                            ]
+
+viewMostUsed : Packages -> Html msg
+viewMostUsed = viewPackages [ ("Most used libraries", .package_name)
+                            , ("Dependents (including transient)", (.all_dependents >> toString))
+                            , ("Stars", (.stars >> toString))
+                            ]
 
 viewPackages : List (String, (Package -> String)) -> Packages -> Html msg
 viewPackages builder packages =
