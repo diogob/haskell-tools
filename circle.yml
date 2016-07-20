@@ -14,4 +14,4 @@ dependencies:
 test:
   override:
     - stack sdist
-    - cp .stack-work/dist $CIRCLE_ARTIFACTS/
+    - cp -r .stack-work/dist $CIRCLE_ARTIFACTS
