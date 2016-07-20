@@ -8,6 +8,7 @@ dependencies:
   override:
     - stack setup
     - rm -fr $(stack path --dist-dir) $(stack path --local-install-root)
+    - stack install hsc2hs
     - stack build
 
 test:
