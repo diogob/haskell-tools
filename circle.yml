@@ -15,3 +15,5 @@ test:
   override:
     - stack sdist
     - cp -r .stack-work/dist $CIRCLE_ARTIFACTS
+    - cp -r .stack-work/install $CIRCLE_ARTIFACTS
+    

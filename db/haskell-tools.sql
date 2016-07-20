@@ -4,6 +4,7 @@ CREATE DATABASE haskell_tools;
 CREATE SCHEMA private;
 SET search_path TO private, public;
 ALTER DATABASE haskell_tools SET search_path TO public, private;
+GRANT USAGE ON SCHEMA private TO anonymous;
 
 CREATE EXTENSION unaccent;
 CREATE EXTENSION pg_trgm;
