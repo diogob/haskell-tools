@@ -71,32 +71,27 @@ viewExtensions extensions =
             ]
 
 viewTopLibraries : Packages -> Html msg
-viewTopLibraries packages =
-    let
-        topLibrariesTR e =
-            tr []
-                [ td [] [ text e.package_name ]
-                , td [] [ toString e.all_dependents |> text ]
-                , td [] [ toString e.stars |> text ]
-                ]
-    in
-        table [ class "primary full" ]
-            [ header ["Top Libraries", "Dependents (including transient)", "Stars" ]
-            , tbody [] (List.map topLibrariesTR packages)
-            ]
-
+viewTopLibraries = viewPackages [ ("Top Libraries", .package_name)
+                                , ("Dependents (including transient)", (.all_dependents >> toString))
+                                , ("Stars", (.stars >> toString))
+                                ]
 
 viewTopApps : Packages -> Html msg
-viewTopApps packages =
+viewTopApps = viewPackages [ ("Top Apps", .package_name)
+                           , ("Dependencies (including transient)", (.all_dependencies >> toString))
+                           , ("Stars", (.stars >> toString))
+                           ]
+
+viewPackages : List (String, (Package -> String)) -> Packages -> Html msg
+viewPackages builder packages =
     let
-        topAppsTR e =
-            tr []
-                [ td [] [ text e.package_name ]
-                , td [] [ toString e.all_dependencies |> text ]
-                , td [] [ toString e.stars |> text ]
-                ]
+        (titles, trBuilder) = List.unzip builder
+        renderTd e = td [] [text e]
+        pkgToStrs pkg = List.map ((|>) pkg) trBuilder
+        renderTr pkg =
+            tr [] (List.map renderTd (pkgToStrs pkg))
     in
         table [ class "primary full" ]
-            [ header ["Top Apps", "Dependencies (including transient)", "Stars" ]
-            , tbody [] (List.map topAppsTR packages)
+            [ header titles
+            , tbody [] (List.map renderTr packages)
             ]
