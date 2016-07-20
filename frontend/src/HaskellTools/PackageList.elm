@@ -26,12 +26,8 @@ update action model =
         if String.length query > 0
         then ( model, Cmd.map Api (searchPackages query) )
         else ( [], Cmd.none )
-    Api (FetchPackages result) ->
-      case result of
-        Ok pkgs ->
-          ( pkgs, Cmd.none )
-        Err error ->
-          ( model, Cmd.none )
+    Api (FetchPackages result) -> ( result, Cmd.none )
+    _ -> ( model, Cmd.none )
 
 init : (Model, Cmd Msg)
 init = ([], Cmd.none)

@@ -56,7 +56,7 @@ type alias Model =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update action model =
-  case (Debug.log "action" action) of
+  case action of
     ShowError msg ->
       ( model, Cmd.none )
     SearchMsg (S.SearchPackages query) ->
