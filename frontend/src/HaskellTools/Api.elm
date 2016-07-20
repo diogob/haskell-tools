@@ -43,6 +43,8 @@ type alias Package =
   , dependents  : List String
   , created_at    : String
   , updated_at    : String
+  , all_dependencies : Int
+  , all_dependents   : Int
 }
 
 type alias Packages = List Package
@@ -70,7 +72,7 @@ searchUrl = apiUrl "/rpc/package_search"
 getExtensions : Cmd ApiMsg
 getExtensions =
   get extensionsUrl
-    |> withHeader "Range" "0-10"
+    |> withHeader "Range" "0-9"
     |> (send (jsonReader decodeExtensions) stringReader)
     |> Task.perform toError (FetchExtensions << .data)
 
@@ -131,6 +133,8 @@ decodePackages =
       |: ("dependents" := (list string))
       |: ("created_at" := string)
       |: ("updated_at" := string)
+      |: ("all_dependencies" := int)
+      |: ("all_dependents" := int)
   )
 
 decodeExtensions : Decoder Extensions

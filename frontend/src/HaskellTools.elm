@@ -22,7 +22,7 @@ view model =
     []
     [ topBar
     , Html.main'
-        [ class "app-body flex two demo" ]
+        [ class "app-body flex demo" ]
         [ App.map SearchMsg S.view
         , if List.length model.packages > 0
             then PL.view model.packages
