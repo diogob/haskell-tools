@@ -93,12 +93,12 @@ WHERE
   repo_location ~* 'github';
 
 -- Trigger to delegate update to packages
-CREATE FUNCTION private.update_package_updated_at()
+CREATE OR REPLACE FUNCTION private.update_package_updated_at()
 RETURNS TRIGGER
 LANGUAGE 'plpgsql'
 AS $$
 BEGIN
-  UPDATE packages SET updated_at = NEW.updated_at WHERE package_name = NEW.package_name;
+  UPDATE private.packages SET updated_at = NEW.updated_at WHERE package_name = NEW.package_name;
   RETURN NEW;
 END;
 $$;

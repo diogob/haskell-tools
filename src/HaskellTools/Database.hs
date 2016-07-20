@@ -60,7 +60,7 @@ showt = cs . show
 insertRepo :: Repo -> T.Text
 insertRepo r =
   toSQL $
-  insert "public.repos" cols values
+  insert "private.repos" cols values
   & onConflict .~ doUpdate "repos_pkey" ["stars" .= ("EXCLUDED"//"stars"), "forks" .= ("EXCLUDED"//"forks"), "collaborators" .= ("EXCLUDED"//"collaborators")]
   where
     cols = fromList ["package_name", "stars", "forks", "collaborators"]
@@ -83,7 +83,7 @@ p2name = T.pack . display . pkgName . package
 insertPkg :: PackageDescription -> T.Text
 insertPkg p =
   toSQL $
-  insert "public.packages" cols values
+  insert "private.packages" cols values
   & onConflict .~ doUpdate "packages_pkey" ["version" .= ("EXCLUDED"//"version")]
   where
     cols = fromList ["package_name", "version", "license", "description", "category", "homepage", "package_url", "repo_type", "repo_location"]
@@ -112,7 +112,7 @@ insertPackageWithDeps (pd, e, d) =
 insertDep :: PackageDescription -> Dependency -> T.Text
 insertDep p d =
   toSQL $
-  insert "public.dependencies" cols values
+  insert "private.dependencies" cols values
   & onConflict .~ doUpdate "dependencies_pkey" ["version_range" .= ("EXCLUDED"//"version_range")]
   where
     cols = fromList ["dependent", "dependency", "version_range"]
@@ -123,7 +123,7 @@ insertDep p d =
 insertExt :: PackageDescription -> Extension -> T.Text
 insertExt p e =
   toSQL $
-  insert "public.extensions" cols values
+  insert "private.extensions" cols values
   & onConflict .~ doNothing
   where
     cols = fromList ["package_name", "extension"]
@@ -144,7 +144,7 @@ selectPackageRepos =
   where
     -- @TODO: we should change this to an UPDATE so we can record the last time we tried to fetch a repo
     template =
-      T.encodeUtf8 $ toSQL $ update "package_repos" (fromList ["updated_at"]) (fromList [now])
+      T.encodeUtf8 $ toSQL $ update "private.package_repos" (fromList ["updated_at"]) (fromList [now])
       & conditions .~ (("package_repos"//"package_name") `In` ( selectFrom "repos"
                                                                 & columns .~ fromList ["package_name"]
                                                                 & conditions .~ age ("repos"//"updated_at") `gte` ("1 day" :: T.Text)
