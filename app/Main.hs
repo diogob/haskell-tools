@@ -5,6 +5,7 @@ import HaskellTools
 import Pipes
 import Hasql.Connection
 import Data.String.Conversions (cs)
+import Data.Monoid ((<>))
 
 main :: IO ()
 main = do
@@ -12,7 +13,7 @@ main = do
   let dbConfig = cs $ configDatabase conf
   conOrError <- acquire dbConfig
   case conOrError of
-    Left _ -> error "Error connecting"
+    Left errorMessage -> error $ "Error connecting: " <> (show errorMessage)
     Right c -> if onlyGh conf
       then runEffect $ loopRepos conf c
       else do
