@@ -206,7 +206,7 @@ CREATE OR REPLACE FUNCTION public.package_search(query text)
   FROM
       public.packages p
   WHERE
-      private.to_tsvector(p.description) @@ plainto_tsquery(private.unaccent(query))
+      to_tsvector(p.description) @@ plainto_tsquery(private.unaccent(query))
       OR
       p.package_name % query
   ORDER BY
