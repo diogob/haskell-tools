@@ -6,12 +6,10 @@ resolver: lts-7.11
 # Local packages, usually specified by relative directory name
 packages:
 - '.'
-- location: 
-    git: 'git@github.com:diogob/pasta.git'
-    commit: 'master'
 
 # Packages to be pulled from upstream that are not in the resolver (e.g., acme-missiles-0.3)
-extra-deps: []
+extra-deps:
+  - pasta-0.1.0.2
 
 # Override default flag values for local packages and extra-deps
 flags: {}
