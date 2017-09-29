@@ -9,6 +9,7 @@ import           Data.List                   (intercalate)
 import           Data.Version                (versionBranch)
 import           Options.Applicative
 import           Paths_haskell_tools             (version)
+import           Data.Monoid ((<>))
 
 -- | Data type to store all command line options
 data AppConfig = AppConfig { configDatabase  :: String
