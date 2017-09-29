@@ -32,4 +32,6 @@ loopRepos conf con = do
   reposOrError <- lift $ fetchPackageRepos con
   case reposOrError of
     Left _ -> error "Error fetching repos"
-    Right r -> for (produceRepos conf r 0) (lift . insertRepos con)
+    Right r -> do
+      lift $ putStrLn "Inserting github data..."
+      for (produceRepos conf r 0) (lift . insertRepos con)

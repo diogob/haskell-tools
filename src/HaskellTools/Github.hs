@@ -36,6 +36,8 @@ import qualified Data.ByteString.Char8 as BS
 
 import Control.Exception as E
 
+import Debug.Trace
+
 produceRepos :: AppConfig -> PackageRepos -> Int -> Producer [Repo] IO ()
 produceRepos conf pkgs page = do
   repos <- lift ioRepos

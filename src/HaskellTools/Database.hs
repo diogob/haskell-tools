@@ -106,8 +106,9 @@ insertPkg p =
 
 insertPackageWithDeps :: PackageWithDeps -> T.Text
 insertPackageWithDeps (pd, e, d) =
-  T.concat (insertDep pd <$> d)
-  <> T.concat (insertExt pd <$> e)
+  T.intercalate ";" (insertDep pd <$> d)
+  <> ";"
+  <> T.intercalate ";" (insertExt pd <$> e)
 
 insertDep :: PackageDescription -> Dependency -> T.Text
 insertDep p d =
