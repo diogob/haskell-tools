@@ -58,7 +58,7 @@ type ApiMsg
   | Error String
 
 apiUrl : String -> String
-apiUrl = (++) "http://localhost:3000"
+apiUrl = (++) "http://api.haskelltools.com"
 
 packagesUrl : String
 packagesUrl = apiUrl "/packages"
