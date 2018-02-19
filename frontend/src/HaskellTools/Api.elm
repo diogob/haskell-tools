@@ -12,10 +12,10 @@ module HaskellTools.Api exposing (apiUrl
                                  , getMostUsed
                                  )
 
+import Http exposing (Error)
 import HttpBuilder exposing(..)
-import Task
 import Json.Encode as Encode
-import Json.Decode exposing (Decoder, succeed, string, list, int, at, (:=))
+import Json.Decode exposing (Decoder, succeed, string, list, int, at, field)
 import Json.Decode.Extra exposing (..)
 
 type alias Extension =
@@ -69,20 +69,32 @@ extensionsUrl = apiUrl "/extensions?order=packages.desc"
 searchUrl : String
 searchUrl = apiUrl "/rpc/package_search"
 
+renderExtensions : Result Error Extensions -> ApiMsg
+renderExtensions r =
+  case r of
+    Err httpError -> toError httpError
+    Ok extensions -> FetchExtensions extensions
+
 getExtensions : Cmd ApiMsg
 getExtensions =
   get extensionsUrl
     |> withHeader "Range" "0-9"
-    |> (send (jsonReader decodeExtensions) stringReader)
-    |> Task.perform toError (FetchExtensions << .data)
+    |> withExpect (Http.expectJson decodeExtensions)
+    |> send renderExtensions
+
+renderPackages : (Packages -> ApiMsg) -> Result Error Packages -> ApiMsg
+renderPackages toPackages r =
+  case r of
+    Err httpError -> toError httpError
+    Ok packages -> toPackages packages
 
 getPackages : List (String, String) -> (Packages -> ApiMsg) -> Cmd ApiMsg
 getPackages query toPackages =
-    url packagesUrl query
-        |> get
+    get packagesUrl
+        |> withQueryParams query
         |> withHeader "Range" "0-9"
-        |> (send (jsonReader decodePackages) stringReader)
-        |> Task.perform toError (toPackages << .data)
+        |> withExpect (Http.expectJson decodePackages)
+        |> send (renderPackages toPackages)
 
 getTopLibraries : Cmd ApiMsg
 getTopLibraries = getPackages [("ratio", "gt.1"), ("order", "stars.desc")] FetchTopLibraries
@@ -92,6 +104,12 @@ getTopApps = getPackages [("ratio", "lte.1"), ("order", "stars.desc")] FetchTopA
 
 getMostUsed : Cmd ApiMsg
 getMostUsed = getPackages [("order", "all_dependents.desc")] FetchMostUsed
+
+renderSearch : Result Error Packages -> ApiMsg
+renderSearch r =
+  case r of
+    Err httpError -> toError httpError
+    Ok packages -> FetchPackages packages
 
 searchPackages : String -> Cmd ApiMsg
 searchPackages query =
@@ -103,45 +121,42 @@ searchPackages query =
             |> withHeaders [("Content-Type", "application/json"), ("Accept", "application/json")]
             |> withHeader "Range" "0-99"
             |> withJsonBody body
-            |> (send (jsonReader decodePackages) stringReader)
-            |> Task.perform toError toPackages
+            |> withExpect (Http.expectJson decodePackages)
+            |> send renderSearch
 
 toError : a -> ApiMsg
 toError _ = Error "API Error"
-
-toPackages : Response Packages -> ApiMsg
-toPackages = FetchPackages << .data
 
 decodePackages : Decoder Packages
 decodePackages =
   list (
     succeed Package
-      |: ("package_name" := string)
-      |: ("version" := string)
-      |: ("license" := string)
-      |: ("description" := string)
-      |: ("category" := string)
-      |: ("homepage" := string)
-      |: ("package_url" := string)
-      |: ("repo_type" := string)
-      |: ("repo_location" := string)
-      |: ("stars" := int)
-      |: ("forks" := int)
-      |: ("collaborators" := int)
-      |: ("extensions" := (list string))
-      |: ("dependencies" := (list string))
-      |: ("dependents" := (list string))
-      |: ("created_at" := string)
-      |: ("updated_at" := string)
-      |: ("all_dependencies" := int)
-      |: ("all_dependents" := int)
+      |: (field "package_name" string)
+      |: (field "version" string)
+      |: (field "license" string)
+      |: (field "description" string)
+      |: (field "category" string)
+      |: (field "homepage" string)
+      |: (field "package_url" string)
+      |: (field "repo_type" string)
+      |: (field "repo_location" string)
+      |: (field "stars" int)
+      |: (field "forks" int)
+      |: (field "collaborators" int)
+      |: (field "extensions" (list string))
+      |: (field "dependencies" (list string))
+      |: (field "dependents" (list string))
+      |: (field "created_at" string)
+      |: (field "updated_at" string)
+      |: (field "all_dependencies" int)
+      |: (field "all_dependents" int)
   )
 
 decodeExtensions : Decoder Extensions
 decodeExtensions =
   list (
     succeed Extension
-      |: ("extension" := string)
-      |: ("packages" := int)
+      |: (field "extension" string)
+      |: (field "packages" int)
   )
 

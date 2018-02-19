@@ -1,13 +1,13 @@
 module HaskellTools exposing (..)
 
-import Html.App as App
+import Html as App
 import HaskellTools.Search as S
 import HaskellTools.Stats as ST
 import HaskellTools.PackageList as PL
 import Html exposing (Html, header, h1, img, text, div, ul)
 import Html.Attributes exposing (class, src, width)
 
-main : Program Never
+main : Program Never Model Msg
 main =
   App.program
     { init = init
@@ -21,7 +21,7 @@ view model =
   div
     []
     [ topBar
-    , Html.main'
+    , Html.main_
         [ class "app-body flex demo" ]
         [ App.map SearchMsg S.view
         , if List.length model.packages > 0
