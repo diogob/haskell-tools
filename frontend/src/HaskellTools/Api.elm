@@ -118,7 +118,7 @@ searchPackages query =
                [ ("query", Encode.string query) ]
     in
         post searchUrl
-            |> withHeaders [("Content-Type", "application/json"), ("Accept", "application/json")]
+            |> withHeaders [("Accept", "application/json")]
             |> withHeader "Range" "0-99"
             |> withJsonBody body
             |> withExpect (Http.expectJson decodePackages)
